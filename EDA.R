@@ -112,7 +112,64 @@ x = ts(cbind(t.one, t.ten))
 test=spectrum( cbind(sfei[which(sfei$Station=="D10"),"chl"], sfei[which(sfei$Station=="D12"),"chl"][1:172] ) ) 
 test$coh
 
+plot(sfei[which(sfei$Station=="D10"),"chl"][40:70],type="l")
+lines(sfei[which(sfei$Station=="D12"),"chl"][40:70],type="l",col="red")
 
-x.spec = spec.pgram(cbind(sfei[which(sfei$Station=="D10"),"chl"],sfei[which(sfei$Station=="D12"),"chl"][1:172])) 
+
+## all are ones, doesn't make any sense
+test=spectrum( cbind(sfei[which(sfei$Station=="D10"),"chl"], sfei[which(sfei$Station=="D12"),"pheo"][1:172] ) ) 
+test$coh
+
+
+test=spectrum( cbind(sfei[which(sfei$Station=="D10"),"chl"], rnorm(172))) 
+test$coh
+
+test=spectrum( cbind(sfei[which(sfei$Station=="D10"),"chl"], sfei[which(sfei$Station=="D10"),"pheo"])) 
+test$coh
+
+test=spectrum( cbind(sfei[which(sfei$Station=="D10"),"chl"][40:70], rnorm(30))) 
+test$coh
+
+test=spectrum( cbind(rnorm(30), rnorm(30))) 
+test$coh
+
+
+x.spec = spec.pgram(cbind(sfei[which(sfei$Station=="D10"),"chl"],sfei[which(sfei$Station=="D12"),"chl"][1:172]),taper=.2) 
 plot(x.spec, plot.type="coherency")
 plot(x.spec, plot.type="phase")
+
+plot(sfei[which(sfei$Station=="D12"),"chl"],type="l")
+lines(sfei[which(sfei$Station=="D10"),"chl"],col="red")
+
+par(mfrow=c(2,1))
+spec.pgram(sfei[which(sfei$Station=="D12"),"chl"])
+spec.pgram(sfei[which(sfei$Station=="D10"),"chl"])
+
+
+###spectrogram
+require(astsa)
+data=sfei[which(sfei$Station=="D12"),"chl"]
+#EXP6
+nobs = length(data) # number of observations 
+wsize = 30# window size  ## 8 15
+overlap = 5 # overlap ## 2 4
+ovr = wsize-overlap 
+nseg = floor(nobs/ovr)-1; # number of segments 
+krnl = kernel("daniell", c(1,1)) # kernel
+ex.spec = matrix(0, wsize/2, nseg) 
+for (k in 1:nseg){ 
+  a = ovr*(k-1)+1 
+b = wsize+ovr*(k-1) 
+ex.spec[,k] = mvspec(data[a:b], krnl, taper=.5, plot=FALSE)$spec 
+} 
+ex.spec
+
+x = seq(0, 10, len = floor(nrow(ex.spec)/2)) 
+y = seq(0, ovr*nseg, len = ncol(ex.spec)) 
+z = ex.spec[1:(nrow(ex.spec)/2),] # below is text version
+filled.contour(x,y,log(z),ylab="time",xlab="frequency (Hz)",nlevels=12 ,col=gray(11:0/11),main="Explosion") 
+persp(x,y,z,zlab="Power",xlab="frequency(Hz)",ylab="time",ticktype="detailed",theta=25,d=2,main="Explosion")
+
+
+specgram(data) ## I think my data is too coarse for this
+
