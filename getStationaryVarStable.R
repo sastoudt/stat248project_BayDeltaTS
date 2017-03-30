@@ -55,11 +55,29 @@ lines(D10$predGAMchl,col="blue")
 #head(D10$chl-D10$predGAM)
 #head(D10$residGAM)
 
+par(mfrow=c(2,1))
 plot(D10$residGAMchl,type="l") ## check for stationarity
+plot(log(D10$residGAMchl+abs(min(D10$residGAMchl))),type="l")
+
 plot(D12$residGAMchl,type="l")
+plot(log(D12$residGAMchl+abs(min(D12$residGAMchl))),type="l")
+
 plot(D22$residGAMchl,type="l")
+plot(log(D22$residGAMchl+abs(min(D22$residGAMchl))),type="l")
+
 plot(D26$residGAMchl,type="l")
+plot(log(D26$residGAMchl+abs(min(D26$residGAMchl))),type="l")
+
 plot(D4$residGAMchl,type="l")
+plot(log(D4$residGAMchl+abs(min(D4$residGAMchl))),type="l")
+
+D10$residGAMchlTransform=log(D10$residGAMchl+abs(min(D10$residGAMchl)))
+D12$residGAMchlTransform=log(D12$residGAMchl+abs(min(D12$residGAMchl)))
+D22$residGAMchlTransform=log(D22$residGAMchl+abs(min(D22$residGAMchl)))
+D26$residGAMchlTransform=log(D26$residGAMchl+abs(min(D26$residGAMchl)))
+D4$residGAMchlTransform=log(D4$residGAMchl+abs(min(D4$residGAMchl)))
+                             
+
 ## needs variance stabilizing, plus outliers at end?
 
 #### do ####
@@ -87,11 +105,23 @@ plot(D10$do,type="l")
 lines(D10$residGAMdo,col="red")
 lines(D10$predGAMdo,col="blue")
 
+## these don't seem to help stick with original
+par(mfrow=c(2,1))
 plot(D10$residGAMdo,type="l") ## check for stationarity
+plot(log(D10$residGAMdo+abs(min(D10$residGAMdo))),type="l")
+
 plot(D12$residGAMdo,type="l")
+plot(log(D12$residGAMdo+abs(min(D12$residGAMdo))),type="l")
+
 plot(D22$residGAMdo,type="l")
+plot(log(D22$residGAMdo+abs(min(D22$residGAMdo))),type="l")
+
 plot(D26$residGAMdo,type="l")
+plot(log(D26$residGAMdo+abs(min(D26$residGAMdo))),type="l")
+
 plot(D4$residGAMdo,type="l")
+plot(log(D4$residGAMdo+abs(min(D4$residGAMdo))),type="l")
+
 ## could benefit from variance reduction, outliers early and late
 
 #### pheo ####
@@ -122,12 +152,29 @@ plot(D10$pheo,type="l")
 lines(D10$residGAMpheo,col="red")
 lines(D10$predGAMpheo,col="blue")
 
+par(mfrow=c(2,1))
 plot(D10$residGAMpheo,type="l") ## check for stationarity
+plot(log(D10$residGAMpheo+abs(min(D10$residGAMpheo))),type="l")
+
 plot(D12$residGAMpheo,type="l")
+plot(log(D12$residGAMpheo+abs(min(D12$residGAMpheo))),type="l")
+
 plot(D22$residGAMpheo,type="l")
+plot(log(D22$residGAMpheo+abs(min(D22$residGAMpheo))),type="l")
+
 plot(D26$residGAMpheo,type="l")
+plot(log(D26$residGAMpheo+abs(min(D26$residGAMpheo))),type="l")
+
 plot(D4$residGAMpheo,type="l")
+plot(log(D4$residGAMpheo+abs(min(D4$residGAMpheo))),type="l")
+
 ## could benefit from variance reduction, outliers at end of series
+
+D10$residGAMpheoTransform=log(D10$residGAMpheo+abs(min(D10$residGAMpheo)))
+D12$residGAMpheoTransform=log(D12$residGAMpheo+abs(min(D12$residGAMpheo)))
+D22$residGAMpheoTransform=log(D22$residGAMpheo+abs(min(D22$residGAMpheo)))
+D26$residGAMpheoTransform=log(D26$residGAMpheo+abs(min(D26$residGAMpheo)))
+D4$residGAMpheoTransform=log(D4$residGAMpheo+abs(min(D4$residGAMpheo)))
 
 #### sal ####
 
@@ -157,11 +204,23 @@ plot(D10$sal,type="l")
 lines(D10$residGAMsal,col="red")
 lines(D10$predGAMsal,col="blue")
 
+## these don't seem to help, stick to original
+par(mfrow=c(2,1))
 plot(D10$residGAMsal,type="l") ## check for stationarity
+plot(log(D10$residGAMsal+abs(min(D10$residGAMsal))),type="l")
+
 plot(D12$residGAMsal,type="l")
+plot(log(D12$residGAMsal+abs(min(D12$residGAMsal))),type="l")
+
 plot(D22$residGAMsal,type="l")
+plot(log(D22$residGAMsal+abs(min(D22$residGAMsal))),type="l")
+
 plot(D26$residGAMsal,type="l")
+plot(log(D26$residGAMsal+abs(min(D26$residGAMsal))),type="l")
+
 plot(D4$residGAMsal,type="l")
+plot(log(D4$residGAMsal+abs(min(D4$residGAMsal))),type="l")
+
 ##could benefit from variance stabilization some big peaks early and end
 
 #### temp ####
@@ -190,12 +249,29 @@ plot(D10$temp,type="l")
 lines(D10$residGAMtemp,col="red")
 lines(D10$predGAMtemp,col="blue")
 
+## doesn't really help, stick with original
+par(mfrow=c(2,1))
 plot(D10$residGAMtemp,type="l") ## check for stationarity
+plot(log(D10$residGAMtemp+abs(min(D10$residGAMtemp))),type="l")
+
 plot(D12$residGAMtemp,type="l")
+plot(log(D12$residGAMtemp+abs(min(D12$residGAMtemp))),type="l")
+
 plot(D22$residGAMtemp,type="l")
+plot(log(D22$residGAMtemp+abs(min(D22$residGAMtemp))),type="l")
+
 plot(D26$residGAMtemp,type="l")
+plot(log(D26$residGAMtemp+abs(min(D26$residGAMtemp))),type="l")
+
 plot(D4$residGAMtemp,type="l")
+plot(log(D4$residGAMtemp+abs(min(D4$residGAMtemp))),type="l")
+
 ## could benefit from variance stabilization
 
 ## make plots x axis date_dec for report
 ## clean up axis labels and titles
+
+## going to do log transforms but this changes the correlations, I think this is still ok
+## Kendall rank order correlation for time series?
+
+## do I need to demean?
