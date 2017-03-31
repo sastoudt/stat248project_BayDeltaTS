@@ -110,17 +110,40 @@ par(mfrow=c(2,1))
 plot(D10$residGAMdo,type="l") ## check for stationarity
 plot(log(D10$residGAMdo+abs(min(D10$residGAMdo))),type="l")
 
+##http://stackoverflow.com/questions/26617587/finding-optimal-lambda-for-box-cox-transform-in-r
+require(MASS)
+out <- boxcox(lm(D10$residGAMdo+abs(min(D10$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep as is
+
+
 plot(D12$residGAMdo,type="l")
 plot(log(D12$residGAMdo+abs(min(D12$residGAMdo))),type="l")
+
+out <- boxcox(lm(D12$residGAMdo+abs(min(D12$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep as is
 
 plot(D22$residGAMdo,type="l")
 plot(log(D22$residGAMdo+abs(min(D22$residGAMdo))),type="l")
 
+out <- boxcox(lm(D22$residGAMdo+abs(min(D22$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep as is
+
 plot(D26$residGAMdo,type="l")
 plot(log(D26$residGAMdo+abs(min(D26$residGAMdo))),type="l")
 
+out <- boxcox(lm(D26$residGAMdo+abs(min(D26$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep as is
+
 plot(D4$residGAMdo,type="l")
 plot(log(D4$residGAMdo+abs(min(D4$residGAMdo))),type="l")
+
+out <- boxcox(lm(D4$residGAMdo+abs(min(D4$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ##
+
+require(forecast)
+plot(D4$residGAMdo,type="l")
+trans.vector = BoxCox( D4$residGAMdo+abs(min(D4$residGAMdo))+1, 1.5)
+plot(trans.vector,type="l") ## basically the same
 
 ## could benefit from variance reduction, outliers early and late
 
@@ -209,17 +232,45 @@ par(mfrow=c(2,1))
 plot(D10$residGAMsal,type="l") ## check for stationarity
 plot(log(D10$residGAMsal+abs(min(D10$residGAMsal))),type="l")
 
+out <- boxcox(lm(D10$residGAMsal+abs(min(D10$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep this the same
+
 plot(D12$residGAMsal,type="l")
 plot(log(D12$residGAMsal+abs(min(D12$residGAMsal))),type="l")
+
+out <- boxcox(lm(D12$residGAMsal+abs(min(D12$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 
+
+trans.vector = BoxCox( D12$residGAMsal+abs(min(D12$residGAMsal))+1, .5)
+plot(D12$residGAMsal,type="l")
+plot(trans.vector,type="l") ## looks the same
+
+
 
 plot(D22$residGAMsal,type="l")
 plot(log(D22$residGAMsal+abs(min(D22$residGAMsal))),type="l")
 
+out <- boxcox(lm(D22$residGAMsal+abs(min(D22$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## this suggest log is better, actually change
+
 plot(D26$residGAMsal,type="l")
 plot(log(D26$residGAMsal+abs(min(D26$residGAMsal))),type="l")
 
+out <- boxcox(lm(D26$residGAMsal+abs(min(D26$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 
+
+trans.vector = BoxCox( D26$residGAMsal+abs(min(D26$residGAMsal))+1, -1.75)
+plot(D26$residGAMsal,type="l")
+plot(trans.vector,type="l") ## looks the same
+
 plot(D4$residGAMsal,type="l")
 plot(log(D4$residGAMsal+abs(min(D4$residGAMsal))),type="l")
+
+out <- boxcox(lm(D4$residGAMsal+abs(min(D4$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+
+D22$residGAMsalTransform=log(D22$residGAMsal+abs(min(D22$residGAMsal)))
+
 
 ##could benefit from variance stabilization some big peaks early and end
 
@@ -254,17 +305,32 @@ par(mfrow=c(2,1))
 plot(D10$residGAMtemp,type="l") ## check for stationarity
 plot(log(D10$residGAMtemp+abs(min(D10$residGAMtemp))),type="l")
 
+out <- boxcox(lm(D10$residGAMtemp+abs(min(D10$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+
 plot(D12$residGAMtemp,type="l")
 plot(log(D12$residGAMtemp+abs(min(D12$residGAMtemp))),type="l")
+
+out <- boxcox(lm(D12$residGAMtemp+abs(min(D12$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
 
 plot(D22$residGAMtemp,type="l")
 plot(log(D22$residGAMtemp+abs(min(D22$residGAMtemp))),type="l")
 
+out <- boxcox(lm(D22$residGAMtemp+abs(min(D22$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+
 plot(D26$residGAMtemp,type="l")
 plot(log(D26$residGAMtemp+abs(min(D26$residGAMtemp))),type="l")
 
+out <- boxcox(lm(D26$residGAMtemp+abs(min(D26$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+
 plot(D4$residGAMtemp,type="l")
 plot(log(D4$residGAMtemp+abs(min(D4$residGAMtemp))),type="l")
+
+out <- boxcox(lm(D4$residGAMtemp+abs(min(D4$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
 
 ## could benefit from variance stabilization
 
