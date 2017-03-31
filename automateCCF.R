@@ -95,8 +95,10 @@ withinStation=allCombo[which(allCombo$station1==allCombo$station2),]
 dim(withinStation) ## 125
 
 withinStationSameVar=withinStation[which(withinStation$var1==withinStation$var2),]
+dim(withinStationSameVar) ## 25
 
 withinStationDiffVar=withinStation[which(withinStation$var1!=withinStation$var2),]
+dim(withinStationDiffVar) ## 100
 
 leftOver=allCombo[-which(allCombo$station1==allCombo$station2),]
 acrossStationSameVar=leftOver[which(leftOver$var1==leftOver$var2),]
@@ -123,7 +125,7 @@ storeData[[4]]=D26
 storeData[[5]]=D4
 names(storeData)=stationNames
 
-
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
 acrossStationSameVarResults<-c()
 for(i in 1:nrow(acrossStationSameVar)){
   
@@ -135,6 +137,9 @@ for(i in 1:nrow(acrossStationSameVar)){
 print(i)
 }
 
+write.csv(acrossStationSameVarResults,"acrossStationSameVarResults.csv",row.names=F)
+
+
 acrossStationDiffVarResults<-c()
 for(i in 1:nrow(acrossStationDiffVar)){
   res= ccfTest(storeData[acrossStationDiffVar$station1[i]],storeData[acrossStationDiffVar$station2[i]],
@@ -145,6 +150,9 @@ for(i in 1:nrow(acrossStationDiffVar)){
   print(i)
 }
 
+write.csv(acrossStationDiffVarResults,"acrossStationDiffVarResults.csv",row.names=F)
+
+
 withinStationDiffVarResults<-c()
 for(i in 1:nrow(withinStationDiffVar)){
   res=ccfTest(storeData[withinStationDiffVar$station1[i]],storeData[withinStationDiffVar$station2[i]],
@@ -152,6 +160,8 @@ for(i in 1:nrow(withinStationDiffVar)){
   withinStationDiffVarResults<-rbind(withinStationDiffVarResults,c(res$maxLag,res$pVal,res$minPval))
   print(i)
 }
+write.csv(withinStationDiffVarResults,"withinStationDiffVarResults.csv",row.names=F)
+
 
 
 withinStationSameVarResults<-c()
@@ -160,3 +170,6 @@ for(i in 1:nrow(withinStationSameVar)){
   withinStationSameVarResults<-rbind(withinStationSameVarResults,c(res$maxLag,res$pVal,res$minPval))
   print(i)
 }
+
+write.csv(withinStationSameVarResults,"withinStationSameVarResults.csv",row.names=F)
+
