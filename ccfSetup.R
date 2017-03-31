@@ -68,6 +68,9 @@ p.adjust(p, method = "BY")
 ## partial correlation
 ## etc.
 
+## but how to incorporate multiple testing across lags in each
+## does picking the most extreme one as I am sort of get around this?
+
 
 ## other ideas to look into
 ## https://www.researchgate.net/post/How_to_calculate_p-value_for_Cross-Correlation_for_two_time_series_with_delay
