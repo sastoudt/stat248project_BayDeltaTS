@@ -3,7 +3,7 @@ acfTest=function(stationData,nutrient){
   if(sum(grepl(paste(nutrient,"Transform",sep=""),names(stationData)))>0){
     varName=paste("residGAM",nutrient,"Transform",sep="")
   }else{
-    varName=paste("residGAM",nutrient)
+    varName=paste("residGAM",nutrient,sep="")
   }
   
   empP<-c()
@@ -13,7 +13,7 @@ acfTest=function(stationData,nutrient){
     test=acf(test1,lag.max=12,plot=F)
     acfOfInterest=test$acf[2:13]
     empP<-c( empP,acfOfInterest[which.max(abs(acfOfInterest))] )
-    print(i)
+   # print(i)
   }
   
   
@@ -37,19 +37,22 @@ acfTest(D10,"chl")
 #stationData=D10
 #nutrient="chl"
 
+##D12
+##D10
+##do do
 
 ccfTest=function(station1Data,station2Data,station1Nutrient,station2Nutrient){
   
   if(sum(grepl(paste(station1Nutrient,"Transform",sep=""),names(station1Data)))>0){
     varName=paste("residGAM",station1Nutrient,"Transform",sep="")
   }else{
-    varName=paste("residGAM",station1Nutrient)
+    varName=paste("residGAM",station1Nutrient,sep="")
   }
   
   if(sum(grepl(paste(station2Nutrient,"Transform",sep=""),names(station2Data)))>0){
     varName2=paste("residGAM",station2Nutrient,"Transform",sep="")
   }else{
-    varName2=paste("residGAM",station2Nutrient)
+    varName2=paste("residGAM",station2Nutrient,sep="")
   }
   
   empP<-c()
@@ -59,7 +62,7 @@ ccfTest=function(station1Data,station2Data,station1Nutrient,station2Nutrient){
     test=ccf(station1Data[,varName],test1,lag.max=12,plot=F)
     ccfOfInterest=test$acf[14:25]
     empP<-c( empP,ccfOfInterest[which.max(abs(ccfOfInterest))] )
-    print(i)
+  #  print(i)
   }
   test=ccf(station1Data[,varName],station2Data[,varName2],lag.max=12,plot=F)
   ccfOfInterest=test$acf[14:25]
@@ -77,11 +80,11 @@ ccfTest=function(station1Data,station2Data,station1Nutrient,station2Nutrient){
 }
 
 tryThis=ccfTest(D10,D12,"chl","chl")
-#station1Data=D10
-#station2Data=D12
-#station1Nutrient="chl"
-#station2Nutrient="chl"
-
+#station1Data=D12
+#station2Data=D10
+#station1Nutrient="do"
+#station2Nutrient="do"
+#tryThis=ccfTest(D12,D10,"do","do")
 
 stationNames<-c("D10","D12","D22","D26","D4")
 varNames<-c("chl","do","pheo","sal","temp")
@@ -129,7 +132,7 @@ setwd("~/UC_Berkeley/Semester_4/timeSeries")
 acrossStationSameVarResults<-c()
 for(i in 1:nrow(acrossStationSameVar)){
   
- res= ccfTest(storeData[acrossStationSameVar$station1[i]],storeData[acrossStationSameVar$station2[i]],
+ res= ccfTest(storeData[[acrossStationSameVar$station1[i]]],storeData[[acrossStationSameVar$station2[i]]],
           as.character(acrossStationSameVar$var1[i]),as.character(acrossStationSameVar$var2[i]))
 
  
@@ -142,7 +145,7 @@ write.csv(acrossStationSameVarResults,"acrossStationSameVarResults.csv",row.name
 
 acrossStationDiffVarResults<-c()
 for(i in 1:nrow(acrossStationDiffVar)){
-  res= ccfTest(storeData[acrossStationDiffVar$station1[i]],storeData[acrossStationDiffVar$station2[i]],
+  res= ccfTest(storeData[[acrossStationDiffVar$station1[i]]],storeData[[acrossStationDiffVar$station2[i]]],
                as.character(acrossStationDiffVar$var1[i]),as.character(acrossStationDiffVar$var2[i]))
   
   
@@ -155,7 +158,7 @@ write.csv(acrossStationDiffVarResults,"acrossStationDiffVarResults.csv",row.name
 
 withinStationDiffVarResults<-c()
 for(i in 1:nrow(withinStationDiffVar)){
-  res=ccfTest(storeData[withinStationDiffVar$station1[i]],storeData[withinStationDiffVar$station2[i]],
+  res=ccfTest(storeData[[withinStationDiffVar$station1[i]]],storeData[[withinStationDiffVar$station2[i]]],
               as.character(withinStationDiffVar$var1[i]),as.character(withinStationDiffVar$var2[i]))
   withinStationDiffVarResults<-rbind(withinStationDiffVarResults,c(res$maxLag,res$pVal,res$minPval))
   print(i)
@@ -166,7 +169,7 @@ write.csv(withinStationDiffVarResults,"withinStationDiffVarResults.csv",row.name
 
 withinStationSameVarResults<-c()
 for(i in 1:nrow(withinStationSameVar)){
-  res=acfTest(storeData[withinStationSameVar$station1[i]],as.character(withinStationSameVar$var1[i]))
+  res=acfTest(storeData[[withinStationSameVar$station1[i]]],as.character(withinStationSameVar$var1[i]))
   withinStationSameVarResults<-rbind(withinStationSameVarResults,c(res$maxLag,res$pVal,res$minPval))
   print(i)
 }
