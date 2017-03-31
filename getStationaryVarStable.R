@@ -341,3 +341,11 @@ range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
 ## Kendall rank order correlation for time series?
 
 ## do I need to demean?
+## looks like CCF can do that for me, so don't worry about it now
+
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+write.csv(D10,"D10data.csv",row.names=F)
+write.csv(D12,"D12data.csv",row.names=F)
+write.csv(D22,"D22data.csv",row.names=F)
+write.csv(D26,"D26data.csv",row.names=F)
+write.csv(D4,"D4data.csv",row.names=F)
