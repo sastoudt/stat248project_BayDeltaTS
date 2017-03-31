@@ -75,9 +75,80 @@ for(i in 1:length(which(sigToPlot$var1=="do"))){
   }
 text(lonSub,latSub,stationNameSub)
 
+plot(longitude,latitude,main="pheo across stations")
+points(lonSub,latSub,col="red",pch=19)
+arrows(lonSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]],latSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]],
+       lonSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]],latSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]],length=0)
+for(i in 1:length(which(sigToPlot$var1=="pheo"))){
+  
+  if(i==1){
+    text(lonSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]][i]-par("cxy")[2]/2,
+         latSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]][i]-par("cxy")[2]/2,resToPlot$maxLag[which(sigToPlot$var1=="pheo")][i],col="dodgerblue")
+  }else{
+    text(lonSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]][i]+par("cxy")[2]/2,
+         latSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]][i]+par("cxy")[2]/2,resToPlot$maxLag[which(sigToPlot$var1=="pheo")][i],col="dodgerblue")
+  }
+}
+text(lonSub,latSub,stationNameSub)
+
+plot(longitude,latitude,main="sal across stations")
+points(lonSub,latSub,col="red",pch=19)
+arrows(lonSub[sigToPlot$station1[which(sigToPlot$var1=="sal")]],latSub[sigToPlot$station1[which(sigToPlot$var1=="sal")]],
+       lonSub[sigToPlot$station2[which(sigToPlot$var1=="sal")]],latSub[sigToPlot$station2[which(sigToPlot$var1=="sal")]],length=0)
+for(i in 1:length(which(sigToPlot$var1=="sal"))){
+#for(i in 1:4) { 
+  if(i==5){
+    text(-121.85,38.05,resToPlot$maxLag[which(sigToPlot$var1=="sal")][i],col="dodgerblue")
+  }else{#
+    text(lonSub[sigToPlot$station1[which(sigToPlot$var1=="sal")]][i]+par("cxy")[2]/2,
+         latSub[sigToPlot$station1[which(sigToPlot$var1=="sal")]][i]+par("cxy")[2]/2,resToPlot$maxLag[which(sigToPlot$var1=="sal")][i],col="dodgerblue")
+  }
+}
+
+text(lonSub,latSub,stationNameSub)
+
+plot(longitude,latitude,main="temp across stations")
+points(lonSub,latSub,col="red",pch=19)
+arrows(lonSub[sigToPlot$station1[which(sigToPlot$var1=="temp")]],latSub[sigToPlot$station1[which(sigToPlot$var1=="temp")]],
+       lonSub[sigToPlot$station2[which(sigToPlot$var1=="temp")]],latSub[sigToPlot$station2[which(sigToPlot$var1=="temp")]],length=0)
+for(i in 1:length(which(sigToPlot$var1=="temp"))){
+  #for(i in 1:4) { 
+  if(i==3){
+    text(-121.7,38.05,resToPlot$maxLag[which(sigToPlot$var1=="sal")][i],col="dodgerblue")
+  }else{#
+    text(lonSub[sigToPlot$station1[which(sigToPlot$var1=="temp")]][i]+par("cxy")[2]/2,
+         latSub[sigToPlot$station1[which(sigToPlot$var1=="temp")]][i]+par("cxy")[2]/2,resToPlot$maxLag[which(sigToPlot$var1=="temp")][i],col="dodgerblue")
+  }
+}
+
+text(lonSub,latSub,stationNameSub)
+
+
+
+
 
 sum(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
 ## 9
+
+sigToPlot=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+
+sigToPlot
+
+plot(longitude,latitude,main="across stations")
+points(lonSub,latSub,col="red",pch=19)
+arrows(lonSub[sigToPlot$station1],latSub[sigToPlot$station1],
+     lonSub[sigToPlot$station2],latSub[sigToPlot$station2],length=0)
+## D4 D12 3 times
+## D4 D10
+
+## How to visualize this effectively
+## col: nutrient 1
+## text: nutrient 2 +lag
+## but so much overlap
+
+
+
 
 sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
 ## 0
@@ -85,4 +156,8 @@ sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected
 sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
 ## 2
 
+sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
 
+sigToPlot
+resToPlot
