@@ -71,11 +71,11 @@ plot(log(D26$residGAMchl+abs(min(D26$residGAMchl))),type="l")
 plot(D4$residGAMchl,type="l")
 plot(log(D4$residGAMchl+abs(min(D4$residGAMchl))),type="l")
 
-D10$residGAMchlTransform=log(D10$residGAMchl+abs(min(D10$residGAMchl)))
-D12$residGAMchlTransform=log(D12$residGAMchl+abs(min(D12$residGAMchl)))
-D22$residGAMchlTransform=log(D22$residGAMchl+abs(min(D22$residGAMchl)))
-D26$residGAMchlTransform=log(D26$residGAMchl+abs(min(D26$residGAMchl)))
-D4$residGAMchlTransform=log(D4$residGAMchl+abs(min(D4$residGAMchl)))
+D10$residGAMchlTransform=log(D10$residGAMchl+abs(min(D10$residGAMchl))+1)
+D12$residGAMchlTransform=log(D12$residGAMchl+abs(min(D12$residGAMchl))+1)
+D22$residGAMchlTransform=log(D22$residGAMchl+abs(min(D22$residGAMchl))+1)
+D26$residGAMchlTransform=log(D26$residGAMchl+abs(min(D26$residGAMchl))+1)
+D4$residGAMchlTransform=log(D4$residGAMchl+abs(min(D4$residGAMchl))+1)
                              
 
 ## needs variance stabilizing, plus outliers at end?
@@ -193,11 +193,11 @@ plot(log(D4$residGAMpheo+abs(min(D4$residGAMpheo))),type="l")
 
 ## could benefit from variance reduction, outliers at end of series
 
-D10$residGAMpheoTransform=log(D10$residGAMpheo+abs(min(D10$residGAMpheo)))
-D12$residGAMpheoTransform=log(D12$residGAMpheo+abs(min(D12$residGAMpheo)))
-D22$residGAMpheoTransform=log(D22$residGAMpheo+abs(min(D22$residGAMpheo)))
-D26$residGAMpheoTransform=log(D26$residGAMpheo+abs(min(D26$residGAMpheo)))
-D4$residGAMpheoTransform=log(D4$residGAMpheo+abs(min(D4$residGAMpheo)))
+D10$residGAMpheoTransform=log(D10$residGAMpheo+abs(min(D10$residGAMpheo))+1)
+D12$residGAMpheoTransform=log(D12$residGAMpheo+abs(min(D12$residGAMpheo))+1)
+D22$residGAMpheoTransform=log(D22$residGAMpheo+abs(min(D22$residGAMpheo))+1)
+D26$residGAMpheoTransform=log(D26$residGAMpheo+abs(min(D26$residGAMpheo))+1)
+D4$residGAMpheoTransform=log(D4$residGAMpheo+abs(min(D4$residGAMpheo))+1)
 
 #### sal ####
 
@@ -269,7 +269,7 @@ plot(log(D4$residGAMsal+abs(min(D4$residGAMsal))),type="l")
 out <- boxcox(lm(D4$residGAMsal+abs(min(D4$residGAMsal))+1~1))
 range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
 
-D22$residGAMsalTransform=log(D22$residGAMsal+abs(min(D22$residGAMsal)))
+D22$residGAMsalTransform=log(D22$residGAMsal+abs(min(D22$residGAMsal))+1)
 
 
 ##could benefit from variance stabilization some big peaks early and end
@@ -349,3 +349,11 @@ write.csv(D12,"D12data.csv",row.names=F)
 write.csv(D22,"D22data.csv",row.names=F)
 write.csv(D26,"D26data.csv",row.names=F)
 write.csv(D4,"D4data.csv",row.names=F)
+
+
+D10=D10[,-which(names(D10)%in% c("predGAM","residGAM"))]
+D12=D12[,-which(names(D12)%in% c("predGAM","residGAM"))]
+D22=D22[,-which(names(D22)%in% c("predGAM","residGAM"))]
+D26=D26[,-which(names(D26)%in% c("predGAM","residGAM"))]
+D4=D4[,-which(names(D4)%in% c("predGAM","residGAM"))]
+
