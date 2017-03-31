@@ -1,4 +1,43 @@
 
+acfTest=function(stationData,nutrient){
+  if(sum(grepl(paste(nutrient,"Transform",sep=""),names(stationData)))>0){
+    varName=paste("residGAM",nutrient,"Transform",sep="")
+  }else{
+    varName=paste("residGAM",nutrient)
+  }
+  
+  empP<-c()
+  for(i in 2:nrow(stationData) ){
+    test1=stationData[c((i):nrow(stationData),1:(i-1)),varName]
+    
+    test=acf(test1,lag.max=12,plot=F)
+    acfOfInterest=test$acf[2:13]
+    empP<-c( empP,acfOfInterest[which.max(abs(acfOfInterest))] )
+    print(i)
+  }
+  
+  
+  test=acf(stationData[,varName],lag.max=12,plot=F)
+  acfOfInterest=test$acf[2:13]
+  lagOfInterest=test$lag[2:13]
+  maxLag=lagOfInterest[which.max(abs(acfOfInterest))]
+  if(acfOfInterest[which.max(abs(acfOfInterest))]<0){
+    pVal=length(which(empP<acfOfInterest[which.max(abs(acfOfInterest))]))/nrow(stationData)
+    
+  }else{
+    pVal=length(which(empP>acfOfInterest[which.max(abs(acfOfInterest))]))/nrow(stationData)
+  }
+  minPval=1/nrow(stationData)
+  
+  return(list(maxLag=maxLag,pVal=pVal,minPval=minPval))
+  
+}
+
+acfTest(D10,"chl")
+#stationData=D10
+#nutrient="chl"
+
+
 ccfTest=function(station1Data,station2Data,station1Nutrient,station2Nutrient){
   
   if(sum(grepl(paste(station1Nutrient,"Transform",sep=""),names(station1Data)))>0){
@@ -55,6 +94,10 @@ names(allCombo)=c("station1","station2","var1","var2")
 withinStation=allCombo[which(allCombo$station1==allCombo$station2),]
 dim(withinStation) ## 125
 
+withinStationSameVar=withinStation[which(withinStation$var1==withinStation$var2),]
+
+withinStationDiffVar=withinStation[which(withinStation$var1!=withinStation$var2),]
+
 leftOver=allCombo[-which(allCombo$station1==allCombo$station2),]
 acrossStationSameVar=leftOver[which(leftOver$var1==leftOver$var2),]
 dim(acrossStationSameVar) ## 100
@@ -102,4 +145,18 @@ for(i in 1:nrow(acrossStationDiffVar)){
   print(i)
 }
 
-## left to do: acf
+withinStationDiffVarResults<-c()
+for(i in 1:nrow(withinStationDiffVar)){
+  res=ccfTest(storeData[withinStationDiffVar$station1[i]],storeData[withinStationDiffVar$station2[i]],
+              as.character(withinStationDiffVar$var1[i]),as.character(withinStationDiffVar$var2[i]))
+  withinStationDiffVarResults<-rbind(withinStationDiffVarResults,c(res$maxLag,res$pVal,res$minPval))
+  print(i)
+}
+
+
+withinStationSameVarResults<-c()
+for(i in 1:nrow(withinStationSameVar)){
+  res=acfTest(storeData[withinStationSameVar$station1[i]],as.character(withinStationSameVar$var1[i]))
+  withinStationSameVarResults<-rbind(withinStationSameVarResults,c(res$maxLag,res$pVal,res$minPval))
+  print(i)
+}
