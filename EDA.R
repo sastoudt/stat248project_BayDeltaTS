@@ -11,9 +11,9 @@ stationNames= c("C10", "C3", "C7" , "C9","D10","D11","D12","D14A","D15","D16","D
                 "D2","D22", "D24","D26","D28A", "D4","D41","D41A","D42", "D6","D7", "D8","D9","EZ2","EZ2-SJR", "EZ6","EZ6-SJR",
                 "MD10","MD6", "MD7","NZ002","NZ004","NZ032","NZ325","NZS42","P10" ,"P12","P2", "P8","S42")
 
-plot(longitude,latitude)
-points(sfei$Longitude,sfei$Latitude,col="red")
-text(sfei$Longitude,sfei$Latitude,col="red",stationNames[which(stationNames %in% unique(sfei$Station))])
+#plot(longitude,latitude)
+#points(sfei$Longitude,sfei$Latitude,col="red")
+#text(longitude[which(stationNames %in% unique(sfei$Station))],latitude[which(stationNames %in% unique(sfei$Station))],col="red",stationNames[which(stationNames %in% unique(sfei$Station))])
 
 load(file="~/Desktop/DS421_summerProject/GAM_weightedReg_comparison/shiny/data/delt_map.RData")
 plot(delt_map)
