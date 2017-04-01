@@ -77,7 +77,7 @@ D22$residGAMchlTransform=log(D22$residGAMchl+abs(min(D22$residGAMchl))+1)
 D26$residGAMchlTransform=log(D26$residGAMchl+abs(min(D26$residGAMchl))+1)
 D4$residGAMchlTransform=log(D4$residGAMchl+abs(min(D4$residGAMchl))+1)
                              
-
+sfeiData=rbind(D10,D12,D22,D26,D4)
 ## needs variance stabilizing, plus outliers at end?
 
 #### do ####
@@ -199,6 +199,8 @@ D22$residGAMpheoTransform=log(D22$residGAMpheo+abs(min(D22$residGAMpheo))+1)
 D26$residGAMpheoTransform=log(D26$residGAMpheo+abs(min(D26$residGAMpheo))+1)
 D4$residGAMpheoTransform=log(D4$residGAMpheo+abs(min(D4$residGAMpheo))+1)
 
+
+sfeiData=rbind(D10,D12,D22,D26,D4)
 #### sal ####
 
 ptm <- proc.time()
@@ -271,6 +273,8 @@ range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
 
 D22$residGAMsalTransform=log(D22$residGAMsal+abs(min(D22$residGAMsal))+1)
 
+require(dplyr)
+sfeiData=bind_rows(D10,D12,D22,D26,D4)
 
 ##could benefit from variance stabilization some big peaks early and end
 
@@ -342,6 +346,12 @@ range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
 
 ## do I need to demean?
 ## looks like CCF can do that for me, so don't worry about it now
+
+D10=D10[,-which(names(D10)=="residGAMsalTransform")]
+D12=D12[,-which(names(D12)=="residGAMsalTransform")]
+D26=D26[,-which(names(D26)=="residGAMsalTransform")]
+D4=D4[,-which(names(D4)=="residGAMsalTransform")]
+
 
 setwd("~/UC_Berkeley/Semester_4/timeSeries")
 write.csv(D10,"D10data.csv",row.names=F)
