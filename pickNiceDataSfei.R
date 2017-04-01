@@ -404,6 +404,10 @@ D22f=D22f[1:which(D22f$yr=="2015" & D22f$mon=="6"),]
 D26f=D26f[1:which(D26f$yr=="2015" & D26f$mon=="6"),]
 D4f=D4f[1:which(D4f$yr=="2015" & D4f$mon=="6"),]
 
+D22f$Longitude[1]=D22f$Longitude[2]
+D22f$Latitude[1]=D22f$Latitude[2]
+D22f$do[1]=D22f$do[2]
+
 setwd("~/UC_Berkeley/Semester_4/timeSeries")
 afterImputation=rbind(D10f,D12f,D22f,D26f,D4f)
 write.csv(afterImputation,"sfeiDataForProject.csv",row.names=F)
