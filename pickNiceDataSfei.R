@@ -108,32 +108,292 @@ length(which(is.na(dataBeforeImputation$do))) ## 29
 length(which(is.na(dataBeforeImputation$sal))) ## 21
 length(which(is.na(dataBeforeImputation$temp))) ## 19
 
-dataAfterImputation=dataBeforeImputation
+# dataAfterImputation=dataBeforeImputation
+# 
+# ## this doesn't even make sense, not within station etc.
+# 
+# ## if one of before and after is na, just take value of other
+# toImputeDo=which(is.na(dataBeforeImputation$do))
+# for(i in 1:length(which(is.na(dataBeforeImputation$do)))){
+#   dataAfterImputation$do[toImputeDo[i]]=mean(c(dataAfterImputation$do[toImputeDo[i]-1],dataAfterImputation$do[toImputeDo[i]+1]),na.rm=T)
+# print(i)
+#   }
+# 
+# toImputeSal=which(is.na(dataBeforeImputation$sal))
+# for(i in 1:length(which(is.na(dataBeforeImputation$sal)))){
+#   dataAfterImputation$sal[toImputeSal[i]]=mean(c(dataAfterImputation$sal[toImputeSal[i]-1],dataAfterImputation$sal[toImputeSal[i]+1]),na.rm=T)
+# }
+# 
+# toImputeTemp=which(is.na(dataBeforeImputation$temp))
+# for(i in 1:length(which(is.na(dataBeforeImputation$temp)))){
+#   dataAfterImputation$temp[toImputeTemp[i]]=mean(c(dataAfterImputation$temp[toImputeTemp[i]-1],dataAfterImputation$temp[toImputeTemp[i]+1]),na.rm=T)
+# }
+# 
+# length(which(is.na(dataAfterImputation$do))) ## 0
+# length(which(is.na(dataAfterImputation$sal))) ## 0
+# length(which(is.na(dataAfterImputation$temp))) ## 0
+# 
+# toUse=dataAfterImputation[,c("Date","Station","Longitude","Latitude","date_dec","doy","chl","do","pheo","sal","temp")]
+# dim(toUse)
+# 
+# setwd("~/UC_Berkeley/Semester_4/timeSeries")
+# write.csv(toUse,"sfeiDataForProject.csv",row.names=F)
 
-## if one of before and after is na, just take value of other
-toImputeDo=which(is.na(dataBeforeImputation$do))
-for(i in 1:length(which(is.na(dataBeforeImputation$do)))){
-  dataAfterImputation$do[toImputeDo[i]]=mean(c(dataAfterImputation$do[toImputeDo[i]-1],dataAfterImputation$do[toImputeDo[i]+1]),na.rm=T)
-print(i)
-  }
+#sfei<-read.csv("sfeiDataForProject.csv",stringsAsFactors=F)
+## read original and reimpute
+sfei=dataBeforeImputation
+sfei$yr=as.numeric(as.character(format(as.Date(sfei$Date), "%Y")))
+sfei$mon=as.numeric(as.character(format(as.Date(sfei$Date),"%m")))
 
-toImputeSal=which(is.na(dataBeforeImputation$sal))
-for(i in 1:length(which(is.na(dataBeforeImputation$sal)))){
-  dataAfterImputation$sal[toImputeSal[i]]=mean(c(dataAfterImputation$sal[toImputeSal[i]-1],dataAfterImputation$sal[toImputeSal[i]+1]),na.rm=T)
+sfei=sfei[,c("Date","Station","Longitude","Latitude","chl","do","pheo","sal","temp","date_dec","doy","yr","mon")]
+
+yrSeq=seq(2000,2015,by=1)
+monSeq=seq(1,12,by=1)
+
+dataTimeFull=as.data.frame(expand.grid(yrSeq,monSeq))
+names(dataTimeFull)=c("yr","mon")
+
+D10<-subset(sfei,Station=="D10")
+D10f=merge(dataTimeFull,D10,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+D12<-subset(sfei,Station=="D12")
+D12f=merge(dataTimeFull,D12,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+D22<-subset(sfei,Station=="D22")
+D22f=merge(dataTimeFull,D22,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+D26<-subset(sfei,Station=="D26")
+D26f=merge(dataTimeFull,D26,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+D4<-subset(sfei,Station=="D4")
+D4f=merge(dataTimeFull,D4,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+## now need to fill in NAs
+
+D10f[which(is.na(D10f$Date)),"Date"]=paste(D10f[which(is.na(D10f$Date)),"yr"],D10f[which(is.na(D10f$Date)),"mon"],
+                                                  "01",sep="-" )
+
+D10f$Date=as.Date(D10f$Date)
+D10f[which(is.na(D10f$Station)),"Station"]="D10"
+D10f[which(is.na(D10f$Longitude)),"Longitude"]=D10f$Longitude[1]
+D10f[which(is.na(D10f$Latitude)),"Latitude"]=D10f$Latitude[1]
+require(lubridate)
+require(WRTDStidal)
+D10f[which(is.na(D10f$date_dec)),"date_dec"]=as.numeric(dec_time(D10f[which(is.na(D10f$date_dec)),"Date"])$dec_time)
+D10f[which(is.na(D10f$doy)),"doy"]=as.numeric(strftime(D10f[which(is.na(D10f$doy)),"Date"], format = "%j"))
+
+
+D12f[which(is.na(D12f$Date)),"Date"]=paste(D12f[which(is.na(D12f$Date)),"yr"],D12f[which(is.na(D12f$Date)),"mon"],
+                                           "01",sep="-" )
+
+D12f$Date=as.Date(D12f$Date)
+D12f[which(is.na(D12f$Station)),"Station"]="D12"
+D12f[which(is.na(D12f$Longitude)),"Longitude"]=D12f$Longitude[1]
+D12f[which(is.na(D12f$Latitude)),"Latitude"]=D12f$Latitude[1]
+D12f[which(is.na(D12f$date_dec)),"date_dec"]=as.numeric(dec_time(D12f[which(is.na(D12f$date_dec)),"Date"])$dec_time)
+D12f[which(is.na(D12f$doy)),"doy"]=as.numeric(strftime(D12f[which(is.na(D12f$doy)),"Date"], format = "%j"))
+
+
+D22f[which(is.na(D22f$Date)),"Date"]=paste(D22f[which(is.na(D22f$Date)),"yr"],D22f[which(is.na(D22f$Date)),"mon"],
+                                           "01",sep="-" )
+
+D22f$Date=as.Date(D22f$Date)
+D22f[which(is.na(D22f$Station)),"Station"]="D22"
+D22f[which(is.na(D22f$Longitude)),"Longitude"]=D22f$Longitude[1]
+D22f[which(is.na(D22f$Latitude)),"Latitude"]=D22f$Latitude[1]
+D22f[which(is.na(D22f$date_dec)),"date_dec"]=as.numeric(dec_time(D22f[which(is.na(D22f$date_dec)),"Date"])$dec_time)
+D22f[which(is.na(D22f$doy)),"doy"]=as.numeric(strftime(D22f[which(is.na(D22f$doy)),"Date"], format = "%j"))
+
+
+D26f[which(is.na(D26f$Date)),"Date"]=paste(D26f[which(is.na(D26f$Date)),"yr"],D26f[which(is.na(D26f$Date)),"mon"],
+                                           "01",sep="-" )
+
+D26f$Date=as.Date(D26f$Date)
+D26f[which(is.na(D26f$Station)),"Station"]="D26"
+D26f[which(is.na(D26f$Longitude)),"Longitude"]=D26f$Longitude[1]
+D26f[which(is.na(D26f$Latitude)),"Latitude"]=D26f$Latitude[1]
+D26f[which(is.na(D26f$date_dec)),"date_dec"]=as.numeric(dec_time(D26f[which(is.na(D26f$date_dec)),"Date"])$dec_time)
+D26f[which(is.na(D26f$doy)),"doy"]=as.numeric(strftime(D26f[which(is.na(D26f$doy)),"Date"], format = "%j"))
+
+
+D4f[which(is.na(D4f$Date)),"Date"]=paste(D4f[which(is.na(D4f$Date)),"yr"],D4f[which(is.na(D4f$Date)),"mon"],
+                                           "01",sep="-" )
+
+D4f$Date=as.Date(D4f$Date)
+D4f[which(is.na(D4f$Station)),"Station"]="D4"
+D4f[which(is.na(D4f$Longitude)),"Longitude"]=D4f$Longitude[1]
+D4f[which(is.na(D4f$Latitude)),"Latitude"]=D4f$Latitude[1]
+D4f[which(is.na(D4f$date_dec)),"date_dec"]=as.numeric(dec_time(D4f[which(is.na(D4f$date_dec)),"Date"])$dec_time)
+D4f[which(is.na(D4f$doy)),"doy"]=as.numeric(strftime(D4f[which(is.na(D4f$doy)),"Date"], format = "%j"))
+
+
+
+### now impute actual variables
+
+
+#D10f[which(is.na(D10f$chl)),"chl"]
+
+toImputeChl=which(is.na(D10f$chl))
+toImputeDo=which(is.na(D10f$do))
+toImputePheo=which(is.na(D10f$pheo))
+toImputeSal=which(is.na(D10f$sal))
+toImputeTemp=which(is.na(D10f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D10f$chl[toImputeChl[i]]=mean(c(D10f$chl[toImputeChl[i]-1],D10f$chl[toImputeChl[i]+1]),na.rm=T)
 }
+sum(is.na(D10f$chl))
 
-toImputeTemp=which(is.na(dataBeforeImputation$temp))
-for(i in 1:length(which(is.na(dataBeforeImputation$temp)))){
-  dataAfterImputation$temp[toImputeTemp[i]]=mean(c(dataAfterImputation$temp[toImputeTemp[i]-1],dataAfterImputation$temp[toImputeTemp[i]+1]),na.rm=T)
+for(i in 1:length(toImputeDo)){
+  D10f$do[toImputeDo[i]]=mean(c(D10f$do[toImputeDo[i]-1],D10f$do[toImputeDo[i]+1]),na.rm=T)
 }
+sum(is.na(D10f$do))
 
-length(which(is.na(dataAfterImputation$do))) ## 0
-length(which(is.na(dataAfterImputation$sal))) ## 0
-length(which(is.na(dataAfterImputation$temp))) ## 0
+for(i in 1:length(toImputePheo)){
+  D10f$pheo[toImputePheo[i]]=mean(c(D10f$pheo[toImputePheo[i]-1],D10f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D10f$pheo))
 
-toUse=dataAfterImputation[,c("Date","Station","Longitude","Latitude","date_dec","doy","chl","do","pheo","sal","temp")]
-dim(toUse)
+for(i in 1:length(toImputeSal)){
+  D10f$sal[toImputeSal[i]]=mean(c(D10f$sal[toImputeSal[i]-1],D10f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D10f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D10f$temp[toImputeTemp[i]]=mean(c(D10f$temp[toImputeTemp[i]-1],D10f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D10f$temp))
+
+###
+toImputeChl=which(is.na(D12f$chl))
+toImputeDo=which(is.na(D12f$do))
+toImputePheo=which(is.na(D12f$pheo))
+toImputeSal=which(is.na(D12f$sal))
+toImputeTemp=which(is.na(D12f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D12f$chl[toImputeChl[i]]=mean(c(D12f$chl[toImputeChl[i]-1],D12f$chl[toImputeChl[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$chl))
+
+for(i in 1:length(toImputeDo)){
+  D12f$do[toImputeDo[i]]=mean(c(D12f$do[toImputeDo[i]-1],D12f$do[toImputeDo[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$do))
+
+for(i in 1:length(toImputePheo)){
+  D12f$pheo[toImputePheo[i]]=mean(c(D12f$pheo[toImputePheo[i]-1],D12f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$pheo))
+
+for(i in 1:length(toImputeSal)){
+  D12f$sal[toImputeSal[i]]=mean(c(D12f$sal[toImputeSal[i]-1],D12f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D12f$temp[toImputeTemp[i]]=mean(c(D12f$temp[toImputeTemp[i]-1],D12f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$temp))
+
+###
+
+toImputeChl=which(is.na(D22f$chl))
+toImputeDo=which(is.na(D22f$do))
+toImputePheo=which(is.na(D22f$pheo))
+toImputeSal=which(is.na(D22f$sal))
+toImputeTemp=which(is.na(D22f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D22f$chl[toImputeChl[i]]=mean(c(D22f$chl[toImputeChl[i]-1],D22f$chl[toImputeChl[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$chl))
+
+for(i in 1:length(toImputeDo)){
+  D22f$do[toImputeDo[i]]=mean(c(D22f$do[toImputeDo[i]-1],D22f$do[toImputeDo[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$do))
+
+for(i in 1:length(toImputePheo)){
+  D22f$pheo[toImputePheo[i]]=mean(c(D22f$pheo[toImputePheo[i]-1],D22f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$pheo))
+
+for(i in 1:length(toImputeSal)){
+  D22f$sal[toImputeSal[i]]=mean(c(D22f$sal[toImputeSal[i]-1],D22f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D22f$temp[toImputeTemp[i]]=mean(c(D22f$temp[toImputeTemp[i]-1],D22f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$temp))
+
+###
+toImputeChl=which(is.na(D26f$chl))
+toImputeDo=which(is.na(D26f$do))
+toImputePheo=which(is.na(D26f$pheo))
+toImputeSal=which(is.na(D26f$sal))
+toImputeTemp=which(is.na(D26f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D26f$chl[toImputeChl[i]]=mean(c(D26f$chl[toImputeChl[i]-1],D26f$chl[toImputeChl[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$chl))
+
+for(i in 1:length(toImputeDo)){
+  D26f$do[toImputeDo[i]]=mean(c(D26f$do[toImputeDo[i]-1],D26f$do[toImputeDo[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$do))
+
+for(i in 1:length(toImputePheo)){
+  D26f$pheo[toImputePheo[i]]=mean(c(D26f$pheo[toImputePheo[i]-1],D26f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$pheo))
+
+for(i in 1:length(toImputeSal)){
+  D26f$sal[toImputeSal[i]]=mean(c(D26f$sal[toImputeSal[i]-1],D26f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D26f$temp[toImputeTemp[i]]=mean(c(D26f$temp[toImputeTemp[i]-1],D26f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$temp))
+
+###
+
+toImputeChl=which(is.na(D4f$chl))
+toImputeDo=which(is.na(D4f$do))
+toImputePheo=which(is.na(D4f$pheo))
+toImputeSal=which(is.na(D4f$sal))
+toImputeTemp=which(is.na(D4f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D4f$chl[toImputeChl[i]]=mean(c(D4f$chl[toImputeChl[i]-1],D4f$chl[toImputeChl[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$chl))
+
+for(i in 1:length(toImputeDo)){
+  D4f$do[toImputeDo[i]]=mean(c(D4f$do[toImputeDo[i]-1],D4f$do[toImputeDo[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$do))
+
+for(i in 1:length(toImputePheo)){
+  D4f$pheo[toImputePheo[i]]=mean(c(D4f$pheo[toImputePheo[i]-1],D4f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$pheo))
+
+for(i in 1:length(toImputeSal)){
+  D4f$sal[toImputeSal[i]]=mean(c(D4f$sal[toImputeSal[i]-1],D4f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D4f$temp[toImputeTemp[i]]=mean(c(D4f$temp[toImputeTemp[i]-1],D4f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$temp))
 
 setwd("~/UC_Berkeley/Semester_4/timeSeries")
-write.csv(toUse,"sfeiDataForProject.csv",row.names=F)
-
+afterImputation=rbind(D10f,D12f,D22f,D26f,D4f)
+write.csv(afterImputation,"sfeiDataForProject.csv",row.names=F)
