@@ -394,6 +394,16 @@ for(i in 1:length(toImputeTemp)){
 }
 sum(is.na(D4f$temp))
 
+###
+tail(D10f,20)
+## need to trim july on in 2015
+
+D10f=D10f[1:which(D10f$yr=="2015" & D10f$mon=="6"),]
+D12f=D12f[1:which(D12f$yr=="2015" & D12f$mon=="6"),]
+D22f=D22f[1:which(D22f$yr=="2015" & D22f$mon=="6"),]
+D26f=D26f[1:which(D26f$yr=="2015" & D26f$mon=="6"),]
+D4f=D4f[1:which(D4f$yr=="2015" & D4f$mon=="6"),]
+
 setwd("~/UC_Berkeley/Semester_4/timeSeries")
 afterImputation=rbind(D10f,D12f,D22f,D26f,D4f)
 write.csv(afterImputation,"sfeiDataForProject.csv",row.names=F)
