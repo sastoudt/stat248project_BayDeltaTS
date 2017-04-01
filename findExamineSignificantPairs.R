@@ -16,17 +16,17 @@ summary(acrossStationDiffVarResults$minPval)
 summary(withinStationSameVarResults$minPval)
 summary(withinStationDiffVarResults$minPval)
 
-length(which(acrossStationSameVarResults$pVal<0.05)) ## 20
+length(which(acrossStationSameVarResults$pVal<0.05)) ## 18
 nrow(acrossStationSameVarResults) ## 100
-length(which(acrossStationDiffVarResults$pVal<0.05)) ## 78
+length(which(acrossStationDiffVarResults$pVal<0.05)) ## 83
 nrow(acrossStationDiffVarResults) ## 400
-length(which(withinStationSameVarResults$pVal<0.05)) ## 1
+length(which(withinStationSameVarResults$pVal<0.05)) ## 2
 nrow(withinStationSameVarResults) ## 25
-length(which(withinStationDiffVarResults$pVal<0.05)) ## 26
+length(which(withinStationDiffVarResults$pVal<0.05)) ## 23
 nrow(withinStationDiffVarResults) ## 100
 
 sum(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 5
+## 3
 
 sigToPlot=acrossStationSameVar[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
 resToPlot=acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
@@ -75,21 +75,22 @@ for(i in 1:length(which(sigToPlot$var1=="do"))){
   }
 text(lonSub,latSub,stationNameSub)
 
-plot(longitude,latitude,main="pheo across stations")
-points(lonSub,latSub,col="red",pch=19)
-arrows(lonSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]],latSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]],
-       lonSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]],latSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]],length=0)
-for(i in 1:length(which(sigToPlot$var1=="pheo"))){
-  
-  if(i==1){
-    text(lonSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]][i]-par("cxy")[2]/2,
-         latSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]][i]-par("cxy")[2]/2,resToPlot$maxLag[which(sigToPlot$var1=="pheo")][i],col="dodgerblue")
-  }else{
-    text(lonSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]][i]+par("cxy")[2]/2,
-         latSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]][i]+par("cxy")[2]/2,resToPlot$maxLag[which(sigToPlot$var1=="pheo")][i],col="dodgerblue")
-  }
-}
-text(lonSub,latSub,stationNameSub)
+## No pheo
+# plot(longitude,latitude,main="pheo across stations")
+# points(lonSub,latSub,col="red",pch=19)
+# arrows(lonSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]],latSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]],
+#        lonSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]],latSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]],length=0)
+# for(i in 1:length(which(sigToPlot$var1=="pheo"))){
+#   
+#   if(i==1){
+#     text(lonSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]][i]-par("cxy")[2]/2,
+#          latSub[sigToPlot$station2[which(sigToPlot$var1=="pheo")]][i]-par("cxy")[2]/2,resToPlot$maxLag[which(sigToPlot$var1=="pheo")][i],col="dodgerblue")
+#   }else{
+#     text(lonSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]][i]+par("cxy")[2]/2,
+#          latSub[sigToPlot$station1[which(sigToPlot$var1=="pheo")]][i]+par("cxy")[2]/2,resToPlot$maxLag[which(sigToPlot$var1=="pheo")][i],col="dodgerblue")
+#   }
+# }
+# text(lonSub,latSub,stationNameSub)
 
 plot(longitude,latitude,main="sal across stations")
 points(lonSub,latSub,col="red",pch=19)
@@ -124,7 +125,7 @@ text(lonSub,latSub,stationNameSub)
 
 
 sum(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 7
+## 8
 
 sigToPlot=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
 resToPlot=acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
@@ -153,7 +154,7 @@ sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected
 ## 0
 
 sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 4
+## 1
 
 sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
 resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
