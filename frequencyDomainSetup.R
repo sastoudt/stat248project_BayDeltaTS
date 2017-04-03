@@ -112,11 +112,15 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
     test=spectrum( cbind(station1Data[,varName],test1),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
     #test=ccf(station1Data[,varName],test1,lag.max=12,plot=F)
     
-    #probCoh=df(test$coh,2,2*test$df-2)
-    #f=qf(0.95,2,2*test$df-2)
-    #C = f/(16-1+f) ## what about a double pass filter?
+    probCoh=df(test$coh,2,2*test$df-2)
+    f=qf(0.95,2,2*test$df-2)
+    C = f/(16-1+f) ## what about a double pass filter?
     #empP<-c( empP,probCoh[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])] )
-    empP<-c(empP,test$coh[which.max(test$coh)])
+    
+    
+    
+    empP<-c(empP,test$coh[which(probCoh>C)][which.max(test$coh[which(probCoh>C)])])
+    #empP<-c(empP,test$coh[which.max(test$coh)])
     #  print(i)
   }
   test=spectrum( cbind(station1Data[,varName],station2Data[,varName2]),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
@@ -128,6 +132,7 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
   #maxCoh=test$coh[which.max(probCoh[which(probCoh>C)])]
   #maxFreq=1/test$freq[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
   
+
   pVal=length(which(empP>test$coh[which.max(test$coh)]))/nrow(station1Data)
   
   maxPhase=test$phase[which.max(test$coh)]
