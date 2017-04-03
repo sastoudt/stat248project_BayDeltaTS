@@ -68,3 +68,10 @@ sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, 
 resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
 sigToPlot
 resToPlot
+
+
+###
+hist(withinStationDiffVarResults$pVal) ## more zeros than anything
+hist(withinStationSameVarResults$pVal) ## more big values
+hist(acrossStationDiffVarResults$pVal) ## more zeroes
+hist(acrossStationSameVarResults$pVal) ## more zeros than anything
