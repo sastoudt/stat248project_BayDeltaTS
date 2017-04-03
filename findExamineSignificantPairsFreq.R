@@ -16,17 +16,22 @@ summary(acrossStationDiffVarResults$minPval)
 summary(withinStationSameVarResults$minPval)
 summary(withinStationDiffVarResults$minPval)
 
-length(which(acrossStationSameVarResults$pVal<0.05)) ## 0
+length(which(acrossStationSameVarResults$pVal<0.05)) ## 85
 nrow(acrossStationSameVarResults) ## 100
-length(which(acrossStationDiffVarResults$pVal<0.05)) ## 0
+length(which(acrossStationDiffVarResults$pVal<0.05)) ## 81
 nrow(acrossStationDiffVarResults) ## 400
 length(which(withinStationSameVarResults$pVal<0.05)) ## 1
 nrow(withinStationSameVarResults) ## 25
-length(which(withinStationDiffVarResults$pVal<0.05)) ## 0
+length(which(withinStationDiffVarResults$pVal<0.05)) ## 29
 nrow(withinStationDiffVarResults) ## 100
 
 sum(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 0
+## 74
+
+sigToPlot=acrossStationSameVar[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
+resToPlot=acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
+sigToPlot
+resToPlot
 
 lonSub=c(D4$Longitude[1],D10$Longitude[1],D12$Longitude[1],D22$Longitude[1],D26$Longitude[1])
 latSub=c(D4$Latitude[1], D10$Latitude[1], D12$Latitude[1],D22$Latitude[1],D26$Latitude[1])
@@ -39,7 +44,12 @@ latitude=c(37.67934, 38.36771, 38.04631, 38.02161, 38.04376, 38.08453, 38.07664,
            38.04436, 38.11714, 38.05992, 38.04226, 37.97817)
 
 sum(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 0
+## 20
+
+sigToPlot=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+sigToPlot
+resToPlot
 
 
 sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
@@ -52,9 +62,9 @@ sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected
 
 
 sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 0
+## 9
 
-#sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
-#resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
-#sigToPlot
-#resToPlot
+sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+sigToPlot
+resToPlot
