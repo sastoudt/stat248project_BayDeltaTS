@@ -18,11 +18,11 @@ summary(withinStationDiffVarResults$minPval)
 
 length(which(acrossStationSameVarResults$pVal<0.05)) ## 0
 nrow(acrossStationSameVarResults) ## 100
-length(which(acrossStationDiffVarResults$pVal<0.05)) ## 9
+length(which(acrossStationDiffVarResults$pVal<0.05)) ## 0
 nrow(acrossStationDiffVarResults) ## 400
-length(which(withinStationSameVarResults$pVal<0.05)) ## 23
+length(which(withinStationSameVarResults$pVal<0.05)) ## 1
 nrow(withinStationSameVarResults) ## 25
-length(which(withinStationDiffVarResults$pVal<0.05)) ## 5
+length(which(withinStationDiffVarResults$pVal<0.05)) ## 0
 nrow(withinStationDiffVarResults) ## 100
 
 sum(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
@@ -43,18 +43,18 @@ sum(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05)## corrected
 
 
 sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 22
-sigToPlot=withinStationSameVar[which(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05),]
-resToPlot=withinStationSameVarResults[which(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05),]
-sigToPlot
-resToPlot
+## 0
+#sigToPlot=withinStationSameVar[which(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05),]
+#resToPlot=withinStationSameVarResults[which(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05),]
+#sigToPlot
+#resToPlot
 
 
 
 sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 2
+## 0
 
-sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
-resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
-sigToPlot
-resToPlot
+#sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+#resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+#sigToPlot
+#resToPlot
