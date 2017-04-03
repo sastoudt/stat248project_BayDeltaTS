@@ -75,3 +75,8 @@ hist(withinStationDiffVarResults$pVal) ## more zeros than anything
 hist(withinStationSameVarResults$pVal) ## more big values
 hist(acrossStationDiffVarResults$pVal) ## more zeroes
 hist(acrossStationSameVarResults$pVal) ## more zeros than anything
+
+
+## maybe rotation test doesn't work in frequency domain
+## rotate in time, then convert to frequency
+
