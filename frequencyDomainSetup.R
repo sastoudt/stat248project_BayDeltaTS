@@ -87,7 +87,10 @@ probCoh[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
 1/test$freq[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
 test$phase[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
 
-
+station1Data=D10
+station2Data=D4
+station1Nutrient="chl"
+station2Nutrient="pheo"
 
 ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient){
   
@@ -125,7 +128,7 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
   #maxCoh=test$coh[which.max(probCoh[which(probCoh>C)])]
   #maxFreq=1/test$freq[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
   
-  #pVal=length(which(empP>probCoh[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])] ))/nrow(station1Data)
+  pVal=length(which(empP>test$coh[which.max(test$coh)]))/nrow(station1Data)
   
   maxPhase=test$phase[which.max(test$coh)]
   maxCoh=test$coh[which.max(test$coh)]
