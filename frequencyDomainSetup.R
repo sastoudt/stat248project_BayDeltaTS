@@ -49,6 +49,13 @@ localMaxima <- function(x) {
 
 
 spectrum(D10$residGAMchl)
+test=spectrum( D4$residGAMchl,taper=.2,log="no",spans=c(16,16),demean=T,detrend=F) 
+names(test)
+
+pchisq(test$spec,2)
+
+
+
 test=spectrum( cbind(D10$residGAMchl,D4$residGAMchl),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F) 
 #test$coh
 #test$phase
@@ -131,6 +138,41 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
 
 ccfTestFreq(D10,D12,"chl","pheo")
 
+
+acfTestFreq=function(stationData,nutrient){
+  if(sum(grepl(paste(nutrient,"Transform",sep=""),names(stationData)))>0){
+    varName=paste("residGAM",nutrient,"Transform",sep="")
+  }else{
+    varName=paste("residGAM",nutrient,sep="")
+  }
+  
+  empP<-c()
+  for(i in 2:nrow(stationData) ){
+    test1=stationData[c((i):nrow(stationData),1:(i-1)),varName]
+
+    test=spectrum(test1,taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F)
+    #U = qchisq(.025, 2) #upper value
+    #L = qchisq(.975, 2) #lower value
+    #CI = c(2*test$spec[which.max(test$spec)]/L, test$spec[which.max(test$spec)], 2*test$spec[which.max(test$spec)]/U)
+    #if(CI[1]<0)
+   
+    empP<-c( empP, pchisq(test$spec[which.max(test$spec)],2))
+    # print(i)
+  }
+  
+  test=spectrum(stationData[,varName],taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F)
+maxSpec=test$spec[which.max(test$spec)]
+maxFreq=1/test$freq[which.max(test$spec)]
+pVal=length(which(empP>maxSpec))/nrow(stationData)
+  
+  minPval=1/nrow(stationData)
+  
+  return(list(maxSpec=maxSpec,maxFreq=maxFreq,pVal=pVal,minPval=minPval))
+  
+}
+
+
+acfTestFreq(D10,"chl")
 ######
 
 stationNames<-c("D10","D12","D22","D26","D4")
@@ -203,8 +245,8 @@ write.csv(withinStationDiffVarResults,"withinStationDiffVarResultsFreq.csv",row.
 ## need to make acfFreq
 withinStationSameVarResults<-c()
 for(i in 1:nrow(withinStationSameVar)){
-  res=acfTest(storeData[[withinStationSameVar$station1[i]]],as.character(withinStationSameVar$var1[i]))
-  withinStationSameVarResults<-rbind(withinStationSameVarResults,c(res$maxLag,res$pVal,res$minPval))
+  res=acfTestFreq(storeData[[withinStationSameVar$station1[i]]],as.character(withinStationSameVar$var1[i]))
+  withinStationSameVarResults<-rbind(withinStationSameVarResults,c(res$maxSpec,res$maxFreq,res$pVal,res$minPval))
   print(i)
 }
 
