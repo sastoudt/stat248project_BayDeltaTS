@@ -50,16 +50,164 @@ localMaxima <- function(x) {
 
 spectrum(D10$residGAMchl)
 test=spectrum( cbind(D10$residGAMchl,D4$residGAMchl),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F) 
-test$coh
-test$phase
+#test$coh
+#test$phase
+
+probCoh=df(test$coh,2,2*test$df-2)
 
 f=qf(0.95,2,2*test$df-2)
-C = f/(16+f) ## what about a double pass filter?
+C = f/(16-1+f) ## what about a double pass filter?
+
+probCoh[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
+1/test$freq[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
+test$phase[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
 
 plot(test, plot.type = "coherency")
 abline(h=C,col="red")
 plot(test, plot.type = "phase")
 
+##
+test2=spectrum( cbind(D10$residGAMchl,D4$residGAMpheo),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F) 
+#test$coh
+#test$phase
 
-plot(test$phase)
-pf(test$coh,2,2*L-2)
+probCoh=df(test2$coh,2,2*test2$df-2)
+
+f=qf(0.95,2,2*test2$df-2)
+C = f/(16-1+f) ## what about a double pass filter?
+
+probCoh[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
+1/test$freq[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
+test$phase[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
+
+
+
+ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient){
+  
+  if(sum(grepl(paste(station1Nutrient,"Transform",sep=""),names(station1Data)))>0){
+    varName=paste("residGAM",station1Nutrient,"Transform",sep="")
+  }else{
+    varName=paste("residGAM",station1Nutrient,sep="")
+  }
+  
+  if(sum(grepl(paste(station2Nutrient,"Transform",sep=""),names(station2Data)))>0){
+    varName2=paste("residGAM",station2Nutrient,"Transform",sep="")
+  }else{
+    varName2=paste("residGAM",station2Nutrient,sep="")
+  }
+  
+  empP<-c()
+  for(i in 2:nrow(station2Data) ){
+    test1=station2Data[c((i):nrow(station2Data),1:(i-1)),varName2]
+    test=spectrum( cbind(station1Data[,varName],test1),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
+    #test=ccf(station1Data[,varName],test1,lag.max=12,plot=F)
+    probCoh=df(test$coh,2,2*test$df-2)
+    
+    f=qf(0.95,2,2*test$df-2)
+    C = f/(16-1+f) ## what about a double pass filter?
+    
+    
+    
+    
+    empP<-c( empP,probCoh[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])] )
+    #  print(i)
+  }
+  test=spectrum( cbind(station1Data[,varName],station2Data[,varName2]),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
+  probCoh=df(test$coh,2,2*test$df-2)
+  
+  f=qf(0.95,2,2*test$df-2)
+  C = f/(16-1+f)
+  maxPhase=test$phase[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
+  maxCoh=test$coh[which.max(probCoh[which(probCoh>C)])]
+  maxFreq=1/test$freq[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
+  
+  pVal=length(which(empP>probCoh[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])] ))/nrow(station1Data)
+  
+
+  minPval=1/nrow(station2Data)
+  
+  return(list(maxPhase=maxPhase,maxCoh=maxCoh,maxFreq=maxFreq,pVal=pVal,minPval=minPval))
+}
+
+ccfTestFreq(D10,D12,"chl","pheo")
+
+######
+
+stationNames<-c("D10","D12","D22","D26","D4")
+varNames<-c("chl","do","pheo","sal","temp")
+
+allCombo=expand.grid(stationNames,stationNames,varNames,varNames)
+dim(allCombo)
+head(allCombo)
+names(allCombo)=c("station1","station2","var1","var2")
+
+withinStation=allCombo[which(allCombo$station1==allCombo$station2),]
+dim(withinStation) ## 125
+
+withinStationSameVar=withinStation[which(withinStation$var1==withinStation$var2),]
+dim(withinStationSameVar) ## 25
+
+withinStationDiffVar=withinStation[which(withinStation$var1!=withinStation$var2),]
+dim(withinStationDiffVar) ## 100
+
+leftOver=allCombo[-which(allCombo$station1==allCombo$station2),]
+acrossStationSameVar=leftOver[which(leftOver$var1==leftOver$var2),]
+dim(acrossStationSameVar) ## 100
+
+leftOver2=leftOver[-which(leftOver$var1==leftOver$var2),]
+dim(leftOver2)
+
+acrossStationDiffVar=leftOver2[which(leftOver2$var1!=leftOver2$var2),]
+dim(acrossStationDiffVar) ## 400 same as leftOver2 as expected 
+
+
+
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+acrossStationSameVarResults<-c()
+for(i in 1:nrow(acrossStationSameVar)){
+  
+  res=ccfTestFreq(storeData[[acrossStationSameVar$station1[i]]],storeData[[acrossStationSameVar$station2[i]]],
+               as.character(acrossStationSameVar$var1[i]),as.character(acrossStationSameVar$var2[i]))
+  
+
+  acrossStationSameVarResults<-rbind(acrossStationSameVarResults,c(res$maxPhase,res$maxCoh,res$maxFreq,res$pVal,res$minPval))
+  print(i)
+}
+
+write.csv(acrossStationSameVarResults,"acrossStationSameVarResultsFreq.csv",row.names=F)
+
+
+acrossStationDiffVarResults<-c()
+for(i in 1:nrow(acrossStationDiffVar)){
+  res= ccfTestFreq(storeData[[acrossStationDiffVar$station1[i]]],storeData[[acrossStationDiffVar$station2[i]]],
+               as.character(acrossStationDiffVar$var1[i]),as.character(acrossStationDiffVar$var2[i]))
+  
+  
+  acrossStationDiffVarResults<-rbind(acrossStationDiffVarResults,c(res$maxPhase,res$maxCoh,res$maxFreq,res$pVal,res$minPval))
+  print(i)
+}
+
+write.csv(acrossStationDiffVarResults,"acrossStationDiffVarResultsFreq.csv",row.names=F)
+
+
+withinStationDiffVarResults<-c()
+for(i in 1:nrow(withinStationDiffVar)){
+  res=ccfTestFreq(storeData[[withinStationDiffVar$station1[i]]],storeData[[withinStationDiffVar$station2[i]]],
+              as.character(withinStationDiffVar$var1[i]),as.character(withinStationDiffVar$var2[i]))
+  withinStationDiffVarResults<-rbind(withinStationDiffVarResults,c(res$maxPhase,res$maxCoh,res$maxFreq,res$pVal,res$minPval))
+  print(i)
+}
+write.csv(withinStationDiffVarResults,"withinStationDiffVarResultsFreq.csv",row.names=F)
+
+
+## need to make acfFreq
+withinStationSameVarResults<-c()
+for(i in 1:nrow(withinStationSameVar)){
+  res=acfTest(storeData[[withinStationSameVar$station1[i]]],as.character(withinStationSameVar$var1[i]))
+  withinStationSameVarResults<-rbind(withinStationSameVarResults,c(res$maxLag,res$pVal,res$minPval))
+  print(i)
+}
+
+write.csv(withinStationSameVarResults,"withinStationSameVarResultsFreq.csv",row.names=F)
+
+
