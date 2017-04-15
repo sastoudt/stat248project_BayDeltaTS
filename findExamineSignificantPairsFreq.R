@@ -3,30 +3,33 @@
 setwd("~/UC_Berkeley/Semester_4/timeSeries")
 acrossStationSameVarResults<-read.csv("acrossStationSameVarResultsFreq.csv",stringsAsFactors=F)
 acrossStationDiffVarResults<-read.csv("acrossStationDiffVarResultsFreq.csv",stringsAsFactors=F)
-withinStationSameVarResults<-read.csv("withinStationSameVarResultsFreq.csv",stringsAsFactors=F)
+#withinStationSameVarResults<-read.csv("withinStationSameVarResultsFreq.csv",stringsAsFactors=F)
 withinStationDiffVarResults<-read.csv("withinStationDiffVarResultsFreq.csv",stringsAsFactors=F)
 
-names(acrossStationSameVarResults)=names(acrossStationDiffVarResults)=names(withinStationDiffVarResults)=c("maxPhase","maxCoh","maxFreq","pVal","minPval")
-names(withinStationSameVarResults)=c("maxSpec","maxFreq","pVal","minPval")
+names(acrossStationSameVarResults)=names(acrossStationDiffVarResults)=names(withinStationDiffVarResults)=c("maxPhase","maxCoh","maxFreq","pVal")
+#names(withinStationSameVarResults)=c("maxSpec","maxFreq","pVal","minPval")
 
 ## first check to make sure we have availability to get significant p-values
 
-summary(acrossStationSameVarResults$minPval) ##0.005376   for all is the max min pval, so we are good
-summary(acrossStationDiffVarResults$minPval)
-summary(withinStationSameVarResults$minPval)
-summary(withinStationDiffVarResults$minPval)
+#summary(acrossStationSameVarResults$minPval) ##0.005376   for all is the max min pval, so we are good
+#summary(acrossStationDiffVarResults$minPval)
+#summary(withinStationSameVarResults$minPval)
+#summary(withinStationDiffVarResults$minPval)
 
-length(which(acrossStationSameVarResults$pVal<0.05)) ## 85
+length(which(acrossStationSameVarResults$pVal<0.05)) ## 100
 nrow(acrossStationSameVarResults) ## 100
-length(which(acrossStationDiffVarResults$pVal<0.05)) ## 81
+hist(acrossStationSameVarResults$pVal)
+length(which(acrossStationDiffVarResults$pVal<0.05)) ## 276
 nrow(acrossStationDiffVarResults) ## 400
-length(which(withinStationSameVarResults$pVal<0.05)) ## 1
-nrow(withinStationSameVarResults) ## 25
-length(which(withinStationDiffVarResults$pVal<0.05)) ## 29
+hist(acrossStationDiffVarResults$pVal)
+#length(which(withinStationSameVarResults$pVal<0.05)) ## 1
+#nrow(withinStationSameVarResults) ## 25
+length(which(withinStationDiffVarResults$pVal<0.05)) ## 72
 nrow(withinStationDiffVarResults) ## 100
+hist(withinStationDiffVarResults$pVal)
 
 sum(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 74
+## 90
 
 sigToPlot=acrossStationSameVar[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
 resToPlot=acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
@@ -44,7 +47,7 @@ latitude=c(37.67934, 38.36771, 38.04631, 38.02161, 38.04376, 38.08453, 38.07664,
            38.04436, 38.11714, 38.05992, 38.04226, 37.97817)
 
 sum(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 20
+## 72
 
 sigToPlot=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
 resToPlot=acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
@@ -52,7 +55,7 @@ sigToPlot
 resToPlot
 
 
-sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
+#sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
 ## 0
 #sigToPlot=withinStationSameVar[which(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05),]
 #resToPlot=withinStationSameVarResults[which(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05),]
@@ -62,7 +65,7 @@ sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected
 
 
 sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 9
+## 34
 
 sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
 resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]

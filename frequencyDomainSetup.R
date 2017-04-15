@@ -21,6 +21,9 @@ test=spec.pgram(D10$residGAMchl,spans=c(16,16),taper=0.2,log="no")
 names(test)
 test$freq
 test$spec
+plot(test$freq,test$spec)
+points(test$freq,test$freq/qchisq(.025,2),col="red")
+
 
 test$spec[which(test$freq>0.1 & test$freq<0.15)]
 
@@ -50,27 +53,73 @@ localMaxima <- function(x) {
 
 spectrum(D10$residGAMchl)
 test=spectrum( D4$residGAMchl,taper=.2,log="no",spans=c(16,16),demean=T,detrend=F) 
+test=spec( D4$residGAMchl,taper=.2,log="no",spans=c(16,16),demean=T,detrend=F)
+plot(test,type="spec")
+pchisq(test$spec[which.max(test$spec)],test$df)
+qchisq(0.95,test$df)
 names(test)
 
-pchisq(test$spec,2)
+dchisq(1/test$spec*test$df,2)
+dchisq(test$spec,test$df)
+
+Upper = qchisq(.025, test$df)
+Lower = qchisq(.975, test$df)
+value = test$spec
+CI = cbind(test$df*value/Lower, value, test$df*value/Upper)
+points(test$freq,CI[,1])
+points(test$freq,CI[,3])
+pchisq(test$spec,test$df)
 
 
+plot(D10$residGAMchl,type="l")
 
-test=spectrum( cbind(D10$residGAMchl,D4$residGAMchl),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F) 
+test=spectrum( cbind(D10$residGAMchl,D4$residGAMdo),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F) 
 #test$coh
 #test$phase
 
-probCoh=df(test$coh,2,2*test$df-2)
+gg<-2/test$df
+se<-sqrt(gg/2)
+z1<- -qnorm(0.025)
+z2<- -qnorm(0.975)
+coh<-sqrt(test$coh)
+#tanh(atanh(coh)+z*se)^2
+#https://stat.ethz.ch/pipermail/r-help/2014-October/422946.html
+f=qf(0.95,2,test$df-2) ## make the significance level bonferroni style
+C = f/(test$df/2-1+f) ## what about a double pass filter?
+## test$df is 2L
+plot(test, plot.type = "coherency")
+abline(h=C,col="red") 
+points(test$freq,tanh(atanh(coh)+z1*se)^2,col="red")
+points(test$freq,tanh(atanh(coh)+z2*se)^2)
 
-f=qf(0.95,2,2*test$df-2)
-C = f/(16-1+f) ## what about a double pass filter?
+
+probCoh=df(test$coh,2,test$df-2)
+
+
+f=df(test$coh,2,test$df-2)# make the significance level bonferroni style
+tryThis = f/(test$df/2-1+f)
+tryThis[which.max(test$coh)]
+which.min(tryThis)
+plot(test$coh,tryThis)
+
+df(test$coh[which.max(test$coh)],2,test$df-2)
+df(C,2,test$df-2)
+qf(1-0.05,2,test$df-2)
+
+plot(test$coh,1-probCoh)
+
 
 probCoh[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
 1/test$freq[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
 test$phase[which(probCoh>C)][which.max(probCoh[which(probCoh>C)])]
 
+
+
+
+
 plot(test, plot.type = "coherency")
-abline(h=C,col="red")
+abline(h=C,col="red") ## go back to this, now see if lower bound is above this
+## but now don't have p-value for multiple testing
 plot(test, plot.type = "phase")
 
 ##
