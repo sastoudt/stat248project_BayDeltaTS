@@ -48,14 +48,19 @@ sigToPlot$station1=as.character(sigToPlot$station1)
 sigToPlot$station2=as.character(sigToPlot$station2)
 
 ## none for chl
-# plot(longitude,latitude,main="chl across stations")
-# points(lonSub,latSub,col="red",pch=19)
-# arrows(lonSub[sigToPlot$station1[which(sigToPlot$var1=="chl")]],latSub[sigToPlot$station1[which(sigToPlot$var1=="chl")]],
-#        lonSub[sigToPlot$station2[which(sigToPlot$var1=="chl")]],latSub[sigToPlot$station2[which(sigToPlot$var1=="chl")]],length=0)
-# for(i in 1:length(which(sigToPlot$var1=="chl"))){
-#   text(lonSub[sigToPlot$station1[which(sigToPlot$var1=="chl")]][i]+par("cxy")[2]/2,
-#        latSub[sigToPlot$station1[which(sigToPlot$var1=="chl")]][i]+par("cxy")[2]/2,resToPlot$maxLag[which(sigToPlot$var1=="chl")][i],col="dodgerblue")
-# }
+ plot(longitude,latitude,main="Across Stations, Same Nutrient")
+ points(lonSub,latSub,col="red",pch=19)
+ arrows(lonSub[sigToPlot$station1],latSub[sigToPlot$station1],
+        lonSub[sigToPlot$station2],latSub[sigToPlot$station2],length=0)
+ 
+ text(-121.8,38.1,paste(sigToPlot$var1[1],resToPlot$maxLag[1],sep=" "),col="dodgerblue")
+ text(-121.65,38.1,paste(sigToPlot$var1[2],resToPlot$maxLag[2],sep=" "),col="dodgerblue")
+ text(-121.7,38.05,paste(sigToPlot$var1[3],resToPlot$maxLag[3],sep=" "),col="dodgerblue")
+ 
+ # for(i in 1:nrow(sigToPlot)){
+ #   text(lonSub[sigToPlot$station1][i]+par("cxy")[2]/2,
+ #        latSub[sigToPlot$station1][i]+par("cxy")[2]/2,paste(sigToPlot$var1[i],resToPlot$maxLag[i],sep=" "),col="dodgerblue")
+ # }
 
 #text(lonSub,latSub,stationNameSub)
 
@@ -118,7 +123,7 @@ for(i in 1:length(which(sigToPlot$var1=="temp"))){
   #}
 }
 
-text(lonSub,latSub,stationNameSub)
+text(jitter(lonSub,10),jitter(latSub,10),stationNameSub)
 
 
 
@@ -132,10 +137,26 @@ resToPlot=acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults
 
 sigToPlot
 
-plot(longitude,latitude,main="across stations")
+sigToPlot$station1=as.character(sigToPlot$station1)
+sigToPlot$station2=as.character(sigToPlot$station2)
+
+plot(longitude,latitude,main="Across Stations, Different Nutrients",xlim=c(-122.2,-121.4),ylim=c(37.95,38.12))
 points(lonSub,latSub,col="red",pch=19)
 arrows(lonSub[sigToPlot$station1],latSub[sigToPlot$station1],
      lonSub[sigToPlot$station2],latSub[sigToPlot$station2],length=0)
+
+toPrint=cbind(sigToPlot,resToPlot$maxLag)
+row.names(toPrint)=NULL
+
+names(toPrint)=c("Station 1", "Station 2", "Nutrient 1", "Nutrient 2", "Lag Max")
+toPrint
+
+library(gridExtra)
+pdf("acrossStationsDiffNutTab.pdf", height=6, width=6)
+grid.table(toPrint)
+dev.off()
+
+
 ## D4 D22 twice
 text(lonSub,latSub,stationNameSub)
 arrows(lonSub['D4'],latSub["D4"]+.01,lonSub["D22"],latSub["D22"]+.01,length=0)
@@ -163,3 +184,9 @@ sigToPlot
 resToPlot
 
 ## table
+
+plot(D12$residGAMdo,type="l")
+lines(D12$residGAMtemp,col="red")
+
+plot(D12$residGAMdo,D12$residGAMtemp)
+test=ccf(D12$residGAMdo,D12$residGAMtemp,lag.max=12,plot=T)
