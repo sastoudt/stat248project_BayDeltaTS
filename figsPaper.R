@@ -76,3 +76,5 @@ plot(D12$residGAMsal,type="l",main="Transform Doesn't Help",xlab="Date",ylab="Re
 lines(log(D12$residGAMsal+abs(min(D12$residGAMsal))),col="red")
 legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","log transform"),bty="n")
 
+## see findExamineSignificantPairs for more code
+## search for FIGURE

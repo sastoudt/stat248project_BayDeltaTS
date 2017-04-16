@@ -44,6 +44,7 @@ plot(longitude,latitude)
 points(lonSub,latSub,col="red")
 text(lonSub,latSub,stationNameSub)
 
+## FIGURE
 sigToPlot$station1=as.character(sigToPlot$station1)
 sigToPlot$station2=as.character(sigToPlot$station2)
 
@@ -140,11 +141,12 @@ sigToPlot
 sigToPlot$station1=as.character(sigToPlot$station1)
 sigToPlot$station2=as.character(sigToPlot$station2)
 
+## FIGURE
 plot(longitude,latitude,main="Across Stations, Different Nutrients",xlim=c(-122.2,-121.4),ylim=c(37.95,38.12))
 points(lonSub,latSub,col="red",pch=19)
 arrows(lonSub[sigToPlot$station1],latSub[sigToPlot$station1],
      lonSub[sigToPlot$station2],latSub[sigToPlot$station2],length=0)
-
+text(jitter(lonSub,10),jitter(latSub,10),stationNameSub)
 toPrint=cbind(sigToPlot,resToPlot$maxLag)
 row.names(toPrint)=NULL
 
@@ -188,6 +190,7 @@ resToPlot
 plot(D12$residGAMdo,type="l")
 lines(D12$residGAMtemp,col="red")
 
+## FIGURE
 par(mfrow=c(3,1))
 plot(D12$residGAMdo,D12$residGAMtemp,xlab="resid do",ylab="resid temp",main="D12")
 test=ccf(D12$residGAMdo,D12$residGAMtemp,lag.max=12,plot=T,main="")
