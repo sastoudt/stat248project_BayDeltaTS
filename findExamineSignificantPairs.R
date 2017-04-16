@@ -188,5 +188,23 @@ resToPlot
 plot(D12$residGAMdo,type="l")
 lines(D12$residGAMtemp,col="red")
 
-plot(D12$residGAMdo,D12$residGAMtemp)
-test=ccf(D12$residGAMdo,D12$residGAMtemp,lag.max=12,plot=T)
+par(mfrow=c(3,1))
+plot(D12$residGAMdo,D12$residGAMtemp,xlab="resid do",ylab="resid temp",main="D12")
+test=ccf(D12$residGAMdo,D12$residGAMtemp,lag.max=12,plot=T,main="")
+
+station1Data=station2Data=D12
+varName="do"
+varName2="temp"
+empP<-c()
+for(i in 2:nrow(station2Data) ){
+  test1=station2Data[c((i):nrow(station2Data),1:(i-1)),varName2]
+  
+  test=ccf(station1Data[,varName],test1,lag.max=12,plot=F)
+  ccfOfInterest=test$acf[14:25]
+  empP<-c( empP,ccfOfInterest[which.max(abs(ccfOfInterest))] )
+  #  print(i)
+}
+test=ccf(station1Data[,varName],station2Data[,varName2],lag.max=12,plot=F)
+ccfOfInterest=test$acf[14:25]
+hist(empP,xlab="Max Absolute Cross Correlation",main="Empirical Distribution from Rotation Test")
+abline(v=ccfOfInterest[which.max(ccfOfInterest)],col="red")

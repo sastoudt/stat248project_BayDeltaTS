@@ -44,9 +44,35 @@ g5=ggplot(sfei, aes(x=date_dec, y=do, colour=as.factor(Station)))+geom_line()+xl
 library(gridExtra)
 grid.arrange(g1,g2,g3,g4,g5, ncol=1, nrow =5)
 
+par(mfrow=c(3,1))
+plot(D10$chl,type="l",main="Seasonal Component D10",xlab="Date",ylab="chl")
+lines(D10$predGAMchl,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","GAM fitted"),bty="n")
 
 
+plot(D4$pheo,type="l",main="Seasonal Component D4",xlab="Date",ylab="pheo")
+lines(D4$predGAMpheo,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","GAM fitted"),bty="n")
 
 
+plot(D22$do,type="l",main="Seasonal Component D22",xlab="Date",ylab="do")
+lines(D22$predGAMdo,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","GAM fitted"),bty="n")
 
+
+par(mfrow=c(3,1))
+
+plot(D26$residGAMpheo,type="l",xlab="Date",ylab="Resid Pheo D26",main="Variance Stabilization")
+lines(D26$residGAMpheoTransform,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","log transform"),bty="n")
+
+
+plot(D4$residGAMchl,type="l",xlab="Date",ylab="Resid Chl D4",main="Variance Stabilization")
+lines(D4$residGAMchlTransform,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","log transform"),bty="n")
+
+
+plot(D12$residGAMsal,type="l",main="Transform Doesn't Help",xlab="Date",ylab="Resid Sal D12")
+lines(log(D12$residGAMsal+abs(min(D12$residGAMsal))),col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","log transform"),bty="n")
 
