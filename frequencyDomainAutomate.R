@@ -30,6 +30,10 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
   }else{
     varName2=paste("residGAM",station2Nutrient,sep="")
   }
+  station1Data=D10
+  station2Data=D4
+  varName="residGAMdo"
+  varName2="residGAMtemp"
   test=spectrum( cbind(station1Data[,varName],station2Data[,varName2]),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
   
   #plot(test$coh,df(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2))
@@ -39,7 +43,7 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
   ## lab 5 pg 6
   
   pVal=df(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[which.max(test$coh)]
-  
+## need degrees of freedom to be smaller for the p-value to get bigger
   
  # gg<-2/test$df
   #se<-sqrt(gg/2)
@@ -68,11 +72,18 @@ acfTestFreq=function(stationData,nutrient){
   }else{
     varName=paste("residGAM",nutrient,sep="")
   }
-  
+  #stationData=D10
+ # varName="residGAMdo"
   test=spectrum(stationData[,varName],taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F)
+  dchisq(test$spec,2)
+  dchisq(test$spec,test$df)
+ # qchisq(0.975,2) ## withoutsmoothing
+#  qchisq(0.975,test$df) ## with smoothing
+  plot(test)
   
   ## need to ask about p-val dist
   ## pg 366 timeSeriesAppR
+  # https://books.google.com/books?id=Ks9PBjkjyckC&pg=PA364&lpg=PA364&dq=null+distribution+for+periodogram&source=bl&ots=mT_QE4LXLY&sig=y8URHyu9Vq1zzNZf4I3kCY2PQ90&hl=en&sa=X&ved=0ahUKEwiD_MLkxrTTAhXBx1QKHT_MDpwQ6AEIRjAH#v=onepage&q=null%20distribution%20for%20periodogram&f=false
   
   # empP<-c()
   # for(i in 2:nrow(stationData) ){
