@@ -92,6 +92,16 @@ abline(h=C,col="red")
 points(test$freq,tanh(atanh(coh)+z1*se)^2,col="red")
 points(test$freq,tanh(atanh(coh)+z2*se)^2)
 
+test$coh[which.max(test$coh)]/(test$df/2-1+test$coh[which.max(test$coh)])
+test$coh[which.min(test$coh)]/(test$df/2-1+test$coh[which.min(test$coh)])
+
+
+pVal=df(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[which.max(test$coh)]
+pVal=pf(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[which.max(test$coh)]
+
+pVal=pf(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[which.min(test$coh)]
+pVal=pf(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[28]
+
 
 probCoh=df(test$coh,2,test$df-2)
 

@@ -19,12 +19,12 @@ names(acrossStationSameVarResults)=names(acrossStationDiffVarResults)=names(with
 length(which(acrossStationSameVarResults$pVal<0.05)) ## 100
 nrow(acrossStationSameVarResults) ## 100
 hist(acrossStationSameVarResults$pVal)
-length(which(acrossStationDiffVarResults$pVal<0.05)) ## 276
+length(which(acrossStationDiffVarResults$pVal<0.05)) ## 266
 nrow(acrossStationDiffVarResults) ## 400
 hist(acrossStationDiffVarResults$pVal)
 #length(which(withinStationSameVarResults$pVal<0.05)) ## 1
 #nrow(withinStationSameVarResults) ## 25
-length(which(withinStationDiffVarResults$pVal<0.05)) ## 72
+length(which(withinStationDiffVarResults$pVal<0.05)) ## 64
 nrow(withinStationDiffVarResults) ## 100
 hist(withinStationDiffVarResults$pVal)
 
@@ -65,7 +65,7 @@ resToPlot
 
 
 sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 34
+## 26
 
 sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
 resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]

@@ -30,10 +30,10 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
   }else{
     varName2=paste("residGAM",station2Nutrient,sep="")
   }
-  station1Data=D10
-  station2Data=D4
-  varName="residGAMdo"
-  varName2="residGAMtemp"
+  #station1Data=D10
+  #station2Data=D4
+  #varName="residGAMdo"
+  #varName2="residGAMtemp"
   test=spectrum( cbind(station1Data[,varName],station2Data[,varName2]),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
   
   #plot(test$coh,df(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2))
@@ -42,7 +42,8 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
   ## squared coherence/(1-squared coherence)*(L-1) follows an F distribution 2, 2L-2
   ## lab 5 pg 6
   
-  pVal=df(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[which.max(test$coh)]
+  #pVal=df(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[which.max(test$coh)]
+  pVal=1-pf(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[which.max(test$coh)]
 ## need degrees of freedom to be smaller for the p-value to get bigger
   
  # gg<-2/test$df
@@ -64,6 +65,42 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
 }
 
 ccfTestFreq(D10,D12,"chl","pheo")
+test=spectrum( cbind(D10$chl,D12$pheo),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency")
+
+f=qf(0.95,2,test$df-2) ## make the significance level bonferroni style
+C = f/(test$df/2-1+f) ## what about a double pass filter?
+## test$df is 2L
+plot(test, plot.type = "coherency")
+abline(h=C,col="red") 
+
+
+test=spectrum( cbind(D26$chl,D4$do),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency")
+
+f=qf(0.95,2,test$df-2) ## make the significance level bonferroni style
+C = f/(test$df/2-1+f) ## what about a double pass filter?
+## test$df is 2L
+plot(test, plot.type = "coherency")
+abline(h=C,col="red") 
+
+test=spectrum( cbind(D22$do,D10$chl),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency")
+
+f=qf(0.95,2,test$df-2) ## make the significance level bonferroni style
+C = f/(test$df/2-1+f) ## what about a double pass filter?
+## test$df is 2L
+plot(test, plot.type = "coherency")
+abline(h=C,col="red") 
+
+test=spectrum( cbind(D26$pheo,D10$pheo),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency")
+
+f=qf(0.95,2,test$df-2) ## make the significance level bonferroni style
+C = f/(test$df/2-1+f) ## what about a double pass filter?
+## test$df is 2L
+plot(test, plot.type = "coherency")
+abline(h=C,col="red") 
 
 ## need pval still
 acfTestFreq=function(stationData,nutrient){
@@ -127,22 +164,42 @@ names(allCombo)=c("station1","station2","var1","var2")
 
 withinStation=allCombo[which(allCombo$station1==allCombo$station2),]
 dim(withinStation) ## 125
+withinStation[,1]=as.character(withinStation[,1])
+withinStation[,2]=as.character(withinStation[,2])
+withinStation[,3]=as.character(withinStation[,3])
+withinStation[,4]=as.character(withinStation[,4])
 
 withinStationSameVar=withinStation[which(withinStation$var1==withinStation$var2),]
 dim(withinStationSameVar) ## 25
+withinStationSameVar[,1]=as.character(withinStationSameVar[,1])
+withinStationSameVar[,2]=as.character(withinStationSameVar[,2])
+withinStationSameVar[,3]=as.character(withinStationSameVar[,3])
+withinStationSameVar[,4]=as.character(withinStationSameVar[,4])
 
 withinStationDiffVar=withinStation[which(withinStation$var1!=withinStation$var2),]
 dim(withinStationDiffVar) ## 100
+withinStationDiffVar[,1]=as.character(withinStationDiffVar[,1])
+withinStationDiffVar[,2]=as.character(withinStationDiffVar[,2])
+withinStationDiffVar[,3]=as.character(withinStationDiffVar[,3])
+withinStationDiffVar[,4]=as.character(withinStationDiffVar[,4])
 
 leftOver=allCombo[-which(allCombo$station1==allCombo$station2),]
 acrossStationSameVar=leftOver[which(leftOver$var1==leftOver$var2),]
 dim(acrossStationSameVar) ## 100
+acrossStationSameVar[,1]=as.character(acrossStationSameVar[,1])
+acrossStationSameVar[,2]=as.character(acrossStationSameVar[,2])
+acrossStationSameVar[,3]=as.character(acrossStationSameVar[,3])
+acrossStationSameVar[,4]=as.character(acrossStationSameVar[,4])
 
 leftOver2=leftOver[-which(leftOver$var1==leftOver$var2),]
 dim(leftOver2)
 
 acrossStationDiffVar=leftOver2[which(leftOver2$var1!=leftOver2$var2),]
 dim(acrossStationDiffVar) ## 400 same as leftOver2 as expected 
+acrossStationDiffVar[,1]=as.character(acrossStationDiffVar[,1])
+acrossStationDiffVar[,2]=as.character(acrossStationDiffVar[,2])
+acrossStationDiffVar[,3]=as.character(acrossStationDiffVar[,3])
+acrossStationDiffVar[,4]=as.character(acrossStationDiffVar[,4])
 
 
 
