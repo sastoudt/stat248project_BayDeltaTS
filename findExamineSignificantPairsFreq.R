@@ -16,20 +16,20 @@ names(acrossStationSameVarResults)=names(acrossStationDiffVarResults)=names(with
 #summary(withinStationSameVarResults$minPval)
 #summary(withinStationDiffVarResults$minPval)
 
-length(which(acrossStationSameVarResults$pVal<0.05)) ## 100
+length(which(acrossStationSameVarResults$pVal<0.05)) ## 100 pw 100
 nrow(acrossStationSameVarResults) ## 100
 hist(acrossStationSameVarResults$pVal)
-length(which(acrossStationDiffVarResults$pVal<0.05)) ## 266
+length(which(acrossStationDiffVarResults$pVal<0.05)) ## 266 pw 262
 nrow(acrossStationDiffVarResults) ## 400
 hist(acrossStationDiffVarResults$pVal)
 #length(which(withinStationSameVarResults$pVal<0.05)) ## 1
 #nrow(withinStationSameVarResults) ## 25
-length(which(withinStationDiffVarResults$pVal<0.05)) ## 64
+length(which(withinStationDiffVarResults$pVal<0.05)) ## 64 pw 64
 nrow(withinStationDiffVarResults) ## 100
 hist(withinStationDiffVarResults$pVal)
 
 sum(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 90
+## 90 pw 92
 
 sigToPlot=acrossStationSameVar[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
 resToPlot=acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
@@ -65,7 +65,7 @@ resToPlot
 
 
 sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
-## 26
+## 26 pw 24
 
 sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
 resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
@@ -83,3 +83,24 @@ hist(acrossStationSameVarResults$pVal) ## more zeros than anything
 ## maybe rotation test doesn't work in frequency domain
 ## rotate in time, then convert to frequency
 
+names(withinStationDiffVarResults)
+
+summary(withinStationDiffVarResults$maxFreq) ## median 5.35
+summary(acrossStationSameVarResults$maxFreq) ## median 10.98
+summary(acrossStationDiffVarResults$maxFreq) ## median 4.8 but larger mean and
+
+par(mfrow=c(1,3))
+boxplot(withinStationDiffVarResults$maxFreq,main="within station diff var",ylab="freq")
+boxplot(acrossStationSameVarResults$maxFreq,main="across station same var",ylab="freq")
+boxplot(acrossStationDiffVarResults$maxFreq,main="across station diff var",ylab="freq")
+## across station diff var is surprising
+## within station diff var makes sense
+## why is same var across station so much more dispersed?
+
+boxplot(withinStationDiffVarResults$maxPhase,main="within station diff var",ylab="phase")
+boxplot(acrossStationSameVarResults$maxPhase,main="across station same var",ylab="phase")
+boxplot(acrossStationDiffVarResults$maxPhase,main="across station diff var",ylab="phase")
+## what are the units again?
+
+## try prewhitening before doing this to see if it limits the significant pairs
+## same general results for prewhitened versions

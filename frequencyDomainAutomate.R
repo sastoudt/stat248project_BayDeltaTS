@@ -1,3 +1,4 @@
+require(psd)
 setwd("~/UC_Berkeley/Semester_4/timeSeries")
 D10<-read.csv("D10data.csv",stringsAsFactors=F)
 D12<-read.csv("D12data.csv",stringsAsFactors=F)
@@ -34,6 +35,10 @@ ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient
   #station2Data=D4
   #varName="residGAMdo"
   #varName2="residGAMtemp"
+  
+  #tryThis=prewhiten(station1Data[,varName],AR.max=2)
+  #tryThis2=prewhiten(station2Data[,varName2],AR.max=2)
+  #test=spectrum(cbind(tryThis$prew_ar,tryThis2$prew_ar),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F)
   test=spectrum( cbind(station1Data[,varName],station2Data[,varName2]),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
   
   #plot(test$coh,df(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2))
