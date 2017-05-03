@@ -1,0 +1,1217 @@
+---
+title: "Stat 248 Project Appendix"
+author: "Sara Stoudt"
+date: "May 3, 2017"
+output: html_document
+---
+
+GitHub Repository: https://github.com/sastoudt/stat248project_BayDeltaTS
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Finding good subsets of the data that have the most complete records.
+
+```{r}
+setwd("~/Desktop/sfei")
+sfei<-read.csv("sfeiPlusDates.csv",stringsAsFactors=F)
+names(sfei)
+
+require(ggplot2)
+sub=subset(sfei,Station%in%c("D10","D12","D4","D22","D26")) ## middle/most connected region of interest
+
+```
+
+```{r}
+## EDA to find out which station/variable combos have most complete records
+ggplot(sub, aes(x=date_dec, y=din, colour=as.factor(Station)))+geom_line()+xlim(2000,2015) ## care about recent past
+```
+
+## See how much missingness.
+
+```{r}
+##percent
+percentMissingChl=percentMissingDo=percentMissingPheo=percentMissingTemp=percentMissingSal=c()
+perStation=unique(sfei$Station)
+for(i in 1:length(perStation)){
+  
+  data=subset(sfei,date_dec>2000 &Station==perStation[i])
+  percentMissingChl<-c(percentMissingChl,length(which(is.na(data$chl)))/nrow(data))
+  percentMissingDo<-c(percentMissingDo,length(which(is.na(data$do)))/nrow(data))
+  percentMissingPheo<-c(percentMissingPheo,length(which(is.na(data$pheo)))/nrow(data))
+  percentMissingTemp<-c(percentMissingTemp,length(which(is.na(data$temp)))/nrow(data))
+  percentMissingSal<-c(percentMissingSal,length(which(is.na(data$sal)))/nrow(data))
+  
+  ## chl
+  ## do
+  ## pheo
+  ## temp
+  ## sal
+  
+  
+}
+
+percentMissingChl[which(perStation%in%c("D10","D12","D4","D22","D26"))] 
+percentMissingDo[which(perStation%in%c("D10","D12","D4","D22","D26"))]  
+percentMissingPheo[which(perStation%in%c("D10","D12","D4","D22","D26"))]
+percentMissingTemp[which(perStation%in%c("D10","D12","D4","D22","D26"))] 
+percentMissingSal[which(perStation%in%c("D10","D12","D4","D22","D26"))]
+```
+
+```{r}
+## counts
+
+percentMissingChl=percentMissingDo=percentMissingPheo=percentMissingTemp=percentMissingSal=c()
+perStation=c("D10","D12","D4","D22","D26")
+for(i in 1:length(perStation)){
+  
+  data=subset(sfei,date_dec>2000 &Station==perStation[i])
+  percentMissingChl<-c(percentMissingChl,length(which(is.na(data$chl))))
+  percentMissingDo<-c(percentMissingDo,length(which(is.na(data$do))))
+  percentMissingPheo<-c(percentMissingPheo,length(which(is.na(data$pheo))))
+  percentMissingTemp<-c(percentMissingTemp,length(which(is.na(data$temp))))
+  percentMissingSal<-c(percentMissingSal,length(which(is.na(data$sal))))
+  
+  ## chl
+  ## do
+  ## pheo
+  ## temp
+  ## sal
+  
+  
+}
+percentMissingDo 
+percentMissingTemp
+percentMissingSal
+```
+
+```{r}
+
+## any back to back missing values?
+## avg value before and after missing values
+
+stationUse=c("D10","D12","D4","D22","D26")
+for(i in 1:length(stationUse)){
+  data=subset(sfei,date_dec>2000 &Station==stationUse[i])
+  
+  print(sum(diff(which(is.na(data$do)))==1))
+  print(sum(diff(which(is.na(data$temp)))==1))
+  print(sum(diff(which(is.na(data$sal)))==1))
+  
+  
+  
+}
+
+```
+
+```{r}
+## missingness same for all variables within a station?
+## often but not always
+stationUse=c("D10","D12","D4","D22","D26")
+for(i in 1:length(stationUse)){
+  data=subset(sfei,date_dec>2000 &Station==stationUse[i])
+  
+  print(intersect(which(is.na(data$do)),which(is.na(data$temp))))
+  print(intersect(which(is.na(data$temp)),which(is.na(data$sal))))
+ 
+
+}
+```
+
+## Simple Imputation
+
+```{r}
+stationUse=c("D10","D12","D4","D22","D26")
+dataBeforeImputation=subset(sfei,date_dec>=2000 & Station%in%stationUse)
+nrow(dataBeforeImputation) ## 864
+
+length(which(is.na(dataBeforeImputation$chl))) ## 0 
+length(which(is.na(dataBeforeImputation$pheo))) ## 0
+length(which(is.na(dataBeforeImputation$do))) ## 29
+length(which(is.na(dataBeforeImputation$sal))) ## 21
+length(which(is.na(dataBeforeImputation$temp))) ## 19
+
+
+```
+
+## Get complete year-month combinations
+
+```{r}
+sfei=dataBeforeImputation
+sfei$yr=as.numeric(as.character(format(as.Date(sfei$Date), "%Y")))
+sfei$mon=as.numeric(as.character(format(as.Date(sfei$Date),"%m")))
+
+sfei=sfei[,c("Date","Station","Longitude","Latitude","chl","do","pheo","sal","temp","date_dec","doy","yr","mon")]
+
+yrSeq=seq(2000,2015,by=1)
+monSeq=seq(1,12,by=1)
+
+dataTimeFull=as.data.frame(expand.grid(yrSeq,monSeq))
+names(dataTimeFull)=c("yr","mon")
+
+D10<-subset(sfei,Station=="D10")
+D10f=merge(dataTimeFull,D10,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+D12<-subset(sfei,Station=="D12")
+D12f=merge(dataTimeFull,D12,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+D22<-subset(sfei,Station=="D22")
+D22f=merge(dataTimeFull,D22,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+D26<-subset(sfei,Station=="D26")
+D26f=merge(dataTimeFull,D26,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+D4<-subset(sfei,Station=="D4")
+D4f=merge(dataTimeFull,D4,by.x=c("yr","mon"),by.y=c("yr","mon"),all.x=T)
+
+```
+
+```{r}
+## now need to fill in NAs
+
+D10f[which(is.na(D10f$Date)),"Date"]=paste(D10f[which(is.na(D10f$Date)),"yr"],D10f[which(is.na(D10f$Date)),"mon"],
+                                                  "01",sep="-" )
+
+D10f$Date=as.Date(D10f$Date)
+D10f[which(is.na(D10f$Station)),"Station"]="D10"
+D10f[which(is.na(D10f$Longitude)),"Longitude"]=D10f$Longitude[1]
+D10f[which(is.na(D10f$Latitude)),"Latitude"]=D10f$Latitude[1]
+require(lubridate)
+require(WRTDStidal)
+D10f[which(is.na(D10f$date_dec)),"date_dec"]=as.numeric(dec_time(D10f[which(is.na(D10f$date_dec)),"Date"])$dec_time)
+D10f[which(is.na(D10f$doy)),"doy"]=as.numeric(strftime(D10f[which(is.na(D10f$doy)),"Date"], format = "%j"))
+
+
+D12f[which(is.na(D12f$Date)),"Date"]=paste(D12f[which(is.na(D12f$Date)),"yr"],D12f[which(is.na(D12f$Date)),"mon"],
+                                           "01",sep="-" )
+
+D12f$Date=as.Date(D12f$Date)
+D12f[which(is.na(D12f$Station)),"Station"]="D12"
+D12f[which(is.na(D12f$Longitude)),"Longitude"]=D12f$Longitude[1]
+D12f[which(is.na(D12f$Latitude)),"Latitude"]=D12f$Latitude[1]
+D12f[which(is.na(D12f$date_dec)),"date_dec"]=as.numeric(dec_time(D12f[which(is.na(D12f$date_dec)),"Date"])$dec_time)
+D12f[which(is.na(D12f$doy)),"doy"]=as.numeric(strftime(D12f[which(is.na(D12f$doy)),"Date"], format = "%j"))
+
+
+D22f[which(is.na(D22f$Date)),"Date"]=paste(D22f[which(is.na(D22f$Date)),"yr"],D22f[which(is.na(D22f$Date)),"mon"],
+                                           "01",sep="-" )
+
+D22f$Date=as.Date(D22f$Date)
+D22f[which(is.na(D22f$Station)),"Station"]="D22"
+D22f[which(is.na(D22f$Longitude)),"Longitude"]=D22f$Longitude[1]
+D22f[which(is.na(D22f$Latitude)),"Latitude"]=D22f$Latitude[1]
+D22f[which(is.na(D22f$date_dec)),"date_dec"]=as.numeric(dec_time(D22f[which(is.na(D22f$date_dec)),"Date"])$dec_time)
+D22f[which(is.na(D22f$doy)),"doy"]=as.numeric(strftime(D22f[which(is.na(D22f$doy)),"Date"], format = "%j"))
+
+
+D26f[which(is.na(D26f$Date)),"Date"]=paste(D26f[which(is.na(D26f$Date)),"yr"],D26f[which(is.na(D26f$Date)),"mon"],
+                                           "01",sep="-" )
+
+D26f$Date=as.Date(D26f$Date)
+D26f[which(is.na(D26f$Station)),"Station"]="D26"
+D26f[which(is.na(D26f$Longitude)),"Longitude"]=D26f$Longitude[1]
+D26f[which(is.na(D26f$Latitude)),"Latitude"]=D26f$Latitude[1]
+D26f[which(is.na(D26f$date_dec)),"date_dec"]=as.numeric(dec_time(D26f[which(is.na(D26f$date_dec)),"Date"])$dec_time)
+D26f[which(is.na(D26f$doy)),"doy"]=as.numeric(strftime(D26f[which(is.na(D26f$doy)),"Date"], format = "%j"))
+
+
+D4f[which(is.na(D4f$Date)),"Date"]=paste(D4f[which(is.na(D4f$Date)),"yr"],D4f[which(is.na(D4f$Date)),"mon"],
+                                           "01",sep="-" )
+
+D4f$Date=as.Date(D4f$Date)
+D4f[which(is.na(D4f$Station)),"Station"]="D4"
+D4f[which(is.na(D4f$Longitude)),"Longitude"]=D4f$Longitude[1]
+D4f[which(is.na(D4f$Latitude)),"Latitude"]=D4f$Latitude[1]
+D4f[which(is.na(D4f$date_dec)),"date_dec"]=as.numeric(dec_time(D4f[which(is.na(D4f$date_dec)),"Date"])$dec_time)
+D4f[which(is.na(D4f$doy)),"doy"]=as.numeric(strftime(D4f[which(is.na(D4f$doy)),"Date"], format = "%j"))
+
+
+
+```
+
+```{r}
+### now impute actual variables
+
+
+#D10f[which(is.na(D10f$chl)),"chl"]
+
+toImputeChl=which(is.na(D10f$chl))
+toImputeDo=which(is.na(D10f$do))
+toImputePheo=which(is.na(D10f$pheo))
+toImputeSal=which(is.na(D10f$sal))
+toImputeTemp=which(is.na(D10f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D10f$chl[toImputeChl[i]]=mean(c(D10f$chl[toImputeChl[i]-1],D10f$chl[toImputeChl[i]+1]),na.rm=T)
+}
+sum(is.na(D10f$chl))
+
+for(i in 1:length(toImputeDo)){
+  D10f$do[toImputeDo[i]]=mean(c(D10f$do[toImputeDo[i]-1],D10f$do[toImputeDo[i]+1]),na.rm=T)
+}
+sum(is.na(D10f$do))
+
+for(i in 1:length(toImputePheo)){
+  D10f$pheo[toImputePheo[i]]=mean(c(D10f$pheo[toImputePheo[i]-1],D10f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D10f$pheo))
+
+for(i in 1:length(toImputeSal)){
+  D10f$sal[toImputeSal[i]]=mean(c(D10f$sal[toImputeSal[i]-1],D10f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D10f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D10f$temp[toImputeTemp[i]]=mean(c(D10f$temp[toImputeTemp[i]-1],D10f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D10f$temp))
+
+###
+toImputeChl=which(is.na(D12f$chl))
+toImputeDo=which(is.na(D12f$do))
+toImputePheo=which(is.na(D12f$pheo))
+toImputeSal=which(is.na(D12f$sal))
+toImputeTemp=which(is.na(D12f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D12f$chl[toImputeChl[i]]=mean(c(D12f$chl[toImputeChl[i]-1],D12f$chl[toImputeChl[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$chl))
+
+for(i in 1:length(toImputeDo)){
+  D12f$do[toImputeDo[i]]=mean(c(D12f$do[toImputeDo[i]-1],D12f$do[toImputeDo[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$do))
+
+for(i in 1:length(toImputePheo)){
+  D12f$pheo[toImputePheo[i]]=mean(c(D12f$pheo[toImputePheo[i]-1],D12f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$pheo))
+
+for(i in 1:length(toImputeSal)){
+  D12f$sal[toImputeSal[i]]=mean(c(D12f$sal[toImputeSal[i]-1],D12f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D12f$temp[toImputeTemp[i]]=mean(c(D12f$temp[toImputeTemp[i]-1],D12f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D12f$temp))
+
+###
+
+toImputeChl=which(is.na(D22f$chl))
+toImputeDo=which(is.na(D22f$do))
+toImputePheo=which(is.na(D22f$pheo))
+toImputeSal=which(is.na(D22f$sal))
+toImputeTemp=which(is.na(D22f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D22f$chl[toImputeChl[i]]=mean(c(D22f$chl[toImputeChl[i]-1],D22f$chl[toImputeChl[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$chl))
+
+for(i in 1:length(toImputeDo)){
+  D22f$do[toImputeDo[i]]=mean(c(D22f$do[toImputeDo[i]-1],D22f$do[toImputeDo[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$do))
+
+for(i in 1:length(toImputePheo)){
+  D22f$pheo[toImputePheo[i]]=mean(c(D22f$pheo[toImputePheo[i]-1],D22f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$pheo))
+
+for(i in 1:length(toImputeSal)){
+  D22f$sal[toImputeSal[i]]=mean(c(D22f$sal[toImputeSal[i]-1],D22f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D22f$temp[toImputeTemp[i]]=mean(c(D22f$temp[toImputeTemp[i]-1],D22f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D22f$temp))
+
+###
+toImputeChl=which(is.na(D26f$chl))
+toImputeDo=which(is.na(D26f$do))
+toImputePheo=which(is.na(D26f$pheo))
+toImputeSal=which(is.na(D26f$sal))
+toImputeTemp=which(is.na(D26f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D26f$chl[toImputeChl[i]]=mean(c(D26f$chl[toImputeChl[i]-1],D26f$chl[toImputeChl[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$chl))
+
+for(i in 1:length(toImputeDo)){
+  D26f$do[toImputeDo[i]]=mean(c(D26f$do[toImputeDo[i]-1],D26f$do[toImputeDo[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$do))
+
+for(i in 1:length(toImputePheo)){
+  D26f$pheo[toImputePheo[i]]=mean(c(D26f$pheo[toImputePheo[i]-1],D26f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$pheo))
+
+for(i in 1:length(toImputeSal)){
+  D26f$sal[toImputeSal[i]]=mean(c(D26f$sal[toImputeSal[i]-1],D26f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D26f$temp[toImputeTemp[i]]=mean(c(D26f$temp[toImputeTemp[i]-1],D26f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D26f$temp))
+
+###
+
+toImputeChl=which(is.na(D4f$chl))
+toImputeDo=which(is.na(D4f$do))
+toImputePheo=which(is.na(D4f$pheo))
+toImputeSal=which(is.na(D4f$sal))
+toImputeTemp=which(is.na(D4f$temp))
+
+for(i in 1:length(toImputeChl)){
+  D4f$chl[toImputeChl[i]]=mean(c(D4f$chl[toImputeChl[i]-1],D4f$chl[toImputeChl[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$chl))
+
+for(i in 1:length(toImputeDo)){
+  D4f$do[toImputeDo[i]]=mean(c(D4f$do[toImputeDo[i]-1],D4f$do[toImputeDo[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$do))
+
+for(i in 1:length(toImputePheo)){
+  D4f$pheo[toImputePheo[i]]=mean(c(D4f$pheo[toImputePheo[i]-1],D4f$pheo[toImputePheo[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$pheo))
+
+for(i in 1:length(toImputeSal)){
+  D4f$sal[toImputeSal[i]]=mean(c(D4f$sal[toImputeSal[i]-1],D4f$sal[toImputeSal[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$sal))
+
+for(i in 1:length(toImputeTemp)){
+  D4f$temp[toImputeTemp[i]]=mean(c(D4f$temp[toImputeTemp[i]-1],D4f$temp[toImputeTemp[i]+1]),na.rm=T)
+}
+sum(is.na(D4f$temp))
+
+###
+tail(D10f,20)
+## need to trim july on in 2015
+
+D10f=D10f[1:which(D10f$yr=="2015" & D10f$mon=="6"),]
+D12f=D12f[1:which(D12f$yr=="2015" & D12f$mon=="6"),]
+D22f=D22f[1:which(D22f$yr=="2015" & D22f$mon=="6"),]
+D26f=D26f[1:which(D26f$yr=="2015" & D26f$mon=="6"),]
+D4f=D4f[1:which(D4f$yr=="2015" & D4f$mon=="6"),]
+
+D22f$Longitude[1]=D22f$Longitude[2]
+D22f$Latitude[1]=D22f$Latitude[2]
+D22f$do[1]=D22f$do[2]
+```
+
+```{r,eval=F}
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+afterImputation=rbind(D10f,D12f,D22f,D26f,D4f)
+write.csv(afterImputation,"sfeiDataForProject.csv",row.names=F)
+
+```
+
+## De-trend, de-seasonalize, variance stabilization
+
+```{r}
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+sfeiData<-read.csv("sfeiDataForProject.csv",stringsAsFactors=FALSE)
+names(sfeiData)
+## "chl"       "do"        "pheo"      "sal"       "temp"   
+
+length(unique(sfeiData$Station)) ## 5
+unique(sfeiData$Station) ## "D10" "D12" "D22" "D26" "D4" 
+
+D10<-subset(sfeiData,Station=="D10")
+D12<-subset(sfeiData,Station=="D12")
+D22<-subset(sfeiData,Station=="D22")
+D26<-subset(sfeiData,Station=="D26")
+D4<-subset(sfeiData,Station=="D4")
+
+plot(D10$chl,type="l")
+
+require(mgcv)
+
+require(parallel)  
+nc <- 4   ## have up to 8
+if (detectCores()>1) { ## no point otherwise
+  cl <- makeCluster(nc) 
+} else cl <- NULL
+```
+
+```{r}
+#### chl ####
+sfeiData$Station=as.factor(sfeiData$Station)
+
+chlSeasonalTimeTrend=bam(chl~Station+s(date_dec,bs="cs",by=Station,k=25)+s(doy,bs="cs",by=Station,k=25),data=sfeiData,cluster=cl)
+
+summary(chlSeasonalTimeTrend)
+gam.check(chlSeasonalTimeTrend)
+plot(chlSeasonalTimeTrend)
+## datedec flat for D10, D12, D4
+## increasing for D22
+## curved updward for D26
+## doy peak in 100s for D10, D12, D4
+## plateau 100 to 250 for D22, D26
+
+sfeiData$predGAMchl=chlSeasonalTimeTrend$fitted
+sfeiData$residGAMchl=chlSeasonalTimeTrend$resid
+
+D10<-subset(sfeiData,Station=="D10")
+D12<-subset(sfeiData,Station=="D12")
+D22<-subset(sfeiData,Station=="D22")
+D26<-subset(sfeiData,Station=="D26")
+D4<-subset(sfeiData,Station=="D4")
+
+plot(D10$chl,type="l")
+lines(D10$residGAMchl,col="red")
+lines(D10$predGAMchl,col="blue")
+
+
+par(mfrow=c(2,1))
+plot(D10$residGAMchl,type="l") ## check for stationarity
+plot(log(D10$residGAMchl+abs(min(D10$residGAMchl))),type="l")
+
+plot(D12$residGAMchl,type="l")
+plot(log(D12$residGAMchl+abs(min(D12$residGAMchl))),type="l")
+
+plot(D22$residGAMchl,type="l")
+plot(log(D22$residGAMchl+abs(min(D22$residGAMchl))),type="l")
+
+plot(D26$residGAMchl,type="l")
+plot(log(D26$residGAMchl+abs(min(D26$residGAMchl))),type="l")
+
+plot(D4$residGAMchl,type="l")
+plot(log(D4$residGAMchl+abs(min(D4$residGAMchl))),type="l")
+
+D10$residGAMchlTransform=log(D10$residGAMchl+abs(min(D10$residGAMchl))+1)
+D12$residGAMchlTransform=log(D12$residGAMchl+abs(min(D12$residGAMchl))+1)
+D22$residGAMchlTransform=log(D22$residGAMchl+abs(min(D22$residGAMchl))+1)
+D26$residGAMchlTransform=log(D26$residGAMchl+abs(min(D26$residGAMchl))+1)
+D4$residGAMchlTransform=log(D4$residGAMchl+abs(min(D4$residGAMchl))+1)
+                             
+sfeiData=rbind(D10,D12,D22,D26,D4)
+
+```
+
+```{r}
+doSeasonalTimeTrend=bam(do~Station+s(date_dec,bs="cs",by=Station,k=25)+s(doy,bs="cs",by=Station,k=25),data=sfeiData,cluster=cl)
+summary(doSeasonalTimeTrend)
+gam.check(doSeasonalTimeTrend)
+plot(doSeasonalTimeTrend)
+## datedec slight concave D10, D12, D22 D4
+## flatter D26
+## doy peak 50, min peak 200 all
+
+sfeiData$predGAMdo=doSeasonalTimeTrend$fitted
+sfeiData$residGAMdo=doSeasonalTimeTrend$resid
+
+
+D10<-subset(sfeiData,Station=="D10")
+D12<-subset(sfeiData,Station=="D12")
+D22<-subset(sfeiData,Station=="D22")
+D26<-subset(sfeiData,Station=="D26")
+D4<-subset(sfeiData,Station=="D4")
+
+plot(D10$do,type="l")
+lines(D10$residGAMdo,col="red")
+lines(D10$predGAMdo,col="blue")
+
+## these don't seem to help stick with original
+par(mfrow=c(2,1))
+plot(D10$residGAMdo,type="l") ## check for stationarity
+plot(log(D10$residGAMdo+abs(min(D10$residGAMdo))),type="l")
+
+##http://stackoverflow.com/questions/26617587/finding-optimal-lambda-for-box-cox-transform-in-r
+require(MASS)
+out <- boxcox(lm(D10$residGAMdo+abs(min(D10$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep as is
+
+
+plot(D12$residGAMdo,type="l")
+plot(log(D12$residGAMdo+abs(min(D12$residGAMdo))),type="l")
+
+out <- boxcox(lm(D12$residGAMdo+abs(min(D12$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep as is
+
+plot(D22$residGAMdo,type="l")
+plot(log(D22$residGAMdo+abs(min(D22$residGAMdo))),type="l")
+
+out <- boxcox(lm(D22$residGAMdo+abs(min(D22$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep as is
+
+plot(D26$residGAMdo,type="l")
+plot(log(D26$residGAMdo+abs(min(D26$residGAMdo))),type="l")
+
+out <- boxcox(lm(D26$residGAMdo+abs(min(D26$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep as is
+
+plot(D4$residGAMdo,type="l")
+plot(log(D4$residGAMdo+abs(min(D4$residGAMdo))),type="l")
+
+out <- boxcox(lm(D4$residGAMdo+abs(min(D4$residGAMdo))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ##
+
+require(forecast)
+plot(D4$residGAMdo,type="l")
+trans.vector = BoxCox( D4$residGAMdo+abs(min(D4$residGAMdo))+1, 1.5)
+plot(trans.vector,type="l") ## basically the same
+
+```
+
+```{r}
+#### pheo ####
+
+pheoSeasonalTimeTrend=bam(pheo~Station+s(date_dec,bs="cs",by=Station,k=25)+s(doy,bs="cs",by=Station,k=25),data=sfeiData,cluster=cl)
+
+summary(pheoSeasonalTimeTrend)
+gam.check(pheoSeasonalTimeTrend)
+plot(pheoSeasonalTimeTrend)
+## date dec flat D10, D12, D4
+## downward trend D22
+## down and up D26
+## doy, peak 125, low point 275 D10 
+## concave slight peak around 150 D12, D26, D4 (even slighter for D22)
+
+
+sfeiData$predGAMpheo=pheoSeasonalTimeTrend$fitted
+sfeiData$residGAMpheo=pheoSeasonalTimeTrend$resid
+
+
+D10<-subset(sfeiData,Station=="D10")
+D12<-subset(sfeiData,Station=="D12")
+D22<-subset(sfeiData,Station=="D22")
+D26<-subset(sfeiData,Station=="D26")
+D4<-subset(sfeiData,Station=="D4")
+
+plot(D10$pheo,type="l")
+lines(D10$residGAMpheo,col="red")
+lines(D10$predGAMpheo,col="blue")
+
+par(mfrow=c(2,1))
+plot(D10$residGAMpheo,type="l") ## check for stationarity
+plot(log(D10$residGAMpheo+abs(min(D10$residGAMpheo))),type="l")
+
+plot(D12$residGAMpheo,type="l")
+plot(log(D12$residGAMpheo+abs(min(D12$residGAMpheo))),type="l")
+
+plot(D22$residGAMpheo,type="l")
+plot(log(D22$residGAMpheo+abs(min(D22$residGAMpheo))),type="l")
+
+plot(D26$residGAMpheo,type="l")
+plot(log(D26$residGAMpheo+abs(min(D26$residGAMpheo))),type="l")
+
+plot(D4$residGAMpheo,type="l")
+plot(log(D4$residGAMpheo+abs(min(D4$residGAMpheo))),type="l")
+
+D10$residGAMpheoTransform=log(D10$residGAMpheo+abs(min(D10$residGAMpheo))+1)
+D12$residGAMpheoTransform=log(D12$residGAMpheo+abs(min(D12$residGAMpheo))+1)
+D22$residGAMpheoTransform=log(D22$residGAMpheo+abs(min(D22$residGAMpheo))+1)
+D26$residGAMpheoTransform=log(D26$residGAMpheo+abs(min(D26$residGAMpheo))+1)
+D4$residGAMpheoTransform=log(D4$residGAMpheo+abs(min(D4$residGAMpheo))+1)
+sfeiData=rbind(D10,D12,D22,D26,D4)
+
+```
+
+```{r}
+salSeasonalTimeTrend=bam(sal~Station+s(date_dec,bs="cs",by=Station,k=25)+s(doy,bs="cs",by=Station,k=25),data=sfeiData,cluster=cl)
+summary(salSeasonalTimeTrend)
+gam.check(salSeasonalTimeTrend)
+plot(salSeasonalTimeTrend)
+## date dec D10 wiggly peak 2008, same wiggles but dampened D12, D4
+## concave plateau D22
+## flat D26
+## doy min peak 75, peak 325 D10, D4 same but dampened D12, D22
+## flat D26
+
+sfeiData$predGAMsal=salSeasonalTimeTrend$fitted
+sfeiData$residGAMsal=salSeasonalTimeTrend$resid
+
+
+D10<-subset(sfeiData,Station=="D10")
+D12<-subset(sfeiData,Station=="D12")
+D22<-subset(sfeiData,Station=="D22")
+D26<-subset(sfeiData,Station=="D26")
+D4<-subset(sfeiData,Station=="D4")
+
+plot(D10$sal,type="l") 
+lines(D10$residGAMsal,col="red")
+lines(D10$predGAMsal,col="blue")
+
+## these don't seem to help, stick to original
+par(mfrow=c(2,1))
+plot(D10$residGAMsal,type="l") ## check for stationarity
+plot(log(D10$residGAMsal+abs(min(D10$residGAMsal))),type="l")
+
+out <- boxcox(lm(D10$residGAMsal+abs(min(D10$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## one is consistent, keep this the same
+
+plot(D12$residGAMsal,type="l")
+plot(log(D12$residGAMsal+abs(min(D12$residGAMsal))),type="l")
+
+out <- boxcox(lm(D12$residGAMsal+abs(min(D12$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 
+
+trans.vector = BoxCox( D12$residGAMsal+abs(min(D12$residGAMsal))+1, .5)
+plot(D12$residGAMsal,type="l")
+plot(trans.vector,type="l") ## looks the same
+
+
+
+plot(D22$residGAMsal,type="l")
+plot(log(D22$residGAMsal+abs(min(D22$residGAMsal))),type="l")
+
+out <- boxcox(lm(D22$residGAMsal+abs(min(D22$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## this suggest log is better, actually change
+
+plot(D26$residGAMsal,type="l")
+plot(log(D26$residGAMsal+abs(min(D26$residGAMsal))),type="l")
+
+out <- boxcox(lm(D26$residGAMsal+abs(min(D26$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 
+
+trans.vector = BoxCox( D26$residGAMsal+abs(min(D26$residGAMsal))+1, -1.75)
+plot(D26$residGAMsal,type="l")
+plot(trans.vector,type="l") ## looks the same
+
+plot(D4$residGAMsal,type="l")
+plot(log(D4$residGAMsal+abs(min(D4$residGAMsal))),type="l")
+
+out <- boxcox(lm(D4$residGAMsal+abs(min(D4$residGAMsal))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+
+D22$residGAMsalTransform=log(D22$residGAMsal+abs(min(D22$residGAMsal))+1)
+
+require(dplyr)
+sfeiData=bind_rows(D10,D12,D22,D26,D4)
+
+```
+
+```{r}
+tempSeasonalTimeTrend=bam(temp~Station+s(date_dec,bs="cs",by=Station,k=25)+s(doy,bs="cs",by=Station,k=25),data=sfeiData,cluster=cl)
+summary(tempSeasonalTimeTrend)
+gam.check(tempSeasonalTimeTrend)
+plot(tempSeasonalTimeTrend)
+## datedec nearly flat D10, D12, D26, D4
+## flat D22
+## doy peak 200 all
+
+sfeiData$predGAMtemp=tempSeasonalTimeTrend$fitted
+sfeiData$residGAMtemp=tempSeasonalTimeTrend$resid
+
+
+D10<-subset(sfeiData,Station=="D10")
+D12<-subset(sfeiData,Station=="D12")
+D22<-subset(sfeiData,Station=="D22")
+D26<-subset(sfeiData,Station=="D26")
+D4<-subset(sfeiData,Station=="D4")
+
+plot(D10$temp,type="l")
+lines(D10$residGAMtemp,col="red")
+lines(D10$predGAMtemp,col="blue")
+
+## doesn't really help, stick with original
+par(mfrow=c(2,1))
+plot(D10$residGAMtemp,type="l") ## check for stationarity
+plot(log(D10$residGAMtemp+abs(min(D10$residGAMtemp))),type="l")
+
+out <- boxcox(lm(D10$residGAMtemp+abs(min(D10$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+
+plot(D12$residGAMtemp,type="l")
+plot(log(D12$residGAMtemp+abs(min(D12$residGAMtemp))),type="l")
+
+out <- boxcox(lm(D12$residGAMtemp+abs(min(D12$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+
+plot(D22$residGAMtemp,type="l")
+plot(log(D22$residGAMtemp+abs(min(D22$residGAMtemp))),type="l")
+
+out <- boxcox(lm(D22$residGAMtemp+abs(min(D22$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+
+plot(D26$residGAMtemp,type="l")
+plot(log(D26$residGAMtemp+abs(min(D26$residGAMtemp))),type="l")
+
+out <- boxcox(lm(D26$residGAMtemp+abs(min(D26$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+
+plot(D4$residGAMtemp,type="l")
+plot(log(D4$residGAMtemp+abs(min(D4$residGAMtemp))),type="l")
+
+out <- boxcox(lm(D4$residGAMtemp+abs(min(D4$residGAMtemp))+1~1))
+range(out$x[out$y > max(out$y)-qchisq(0.95,1)/2]) ## 1 is consistent, keep
+```
+
+```{r,eval=F}
+
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+write.csv(D10,"D10data.csv",row.names=F)
+write.csv(D12,"D12data.csv",row.names=F)
+write.csv(D22,"D22data.csv",row.names=F)
+write.csv(D26,"D26data.csv",row.names=F)
+write.csv(D4,"D4data.csv",row.names=F)
+```
+
+## Frequency Domain
+
+```{r}
+acfTest=function(stationData,nutrient){
+  if(sum(grepl(paste(nutrient,"Transform",sep=""),names(stationData)))>0){
+    varName=paste("residGAM",nutrient,"Transform",sep="")
+  }else{
+    varName=paste("residGAM",nutrient,sep="")
+  }
+  
+  empP<-c()
+  for(i in 2:nrow(stationData) ){
+    test1=stationData[c((i):nrow(stationData),1:(i-1)),varName]
+    
+    test=acf(test1,lag.max=12,plot=F)
+    acfOfInterest=test$acf[2:13]
+    empP<-c( empP,acfOfInterest[which.max(abs(acfOfInterest))] )
+   # print(i)
+  }
+  
+  
+  test=acf(stationData[,varName],lag.max=12,plot=F)
+  acfOfInterest=test$acf[2:13]
+  lagOfInterest=test$lag[2:13]
+  maxLag=lagOfInterest[which.max(abs(acfOfInterest))]
+  if(acfOfInterest[which.max(abs(acfOfInterest))]<0){
+    pVal=length(which(empP<acfOfInterest[which.max(abs(acfOfInterest))]))/nrow(stationData)
+    
+  }else{
+    pVal=length(which(empP>acfOfInterest[which.max(abs(acfOfInterest))]))/nrow(stationData)
+  }
+  minPval=1/nrow(stationData)
+  
+  return(list(maxLag=maxLag,pVal=pVal,minPval=minPval))
+  
+}
+
+acfTest(D10,"chl")
+
+
+ccfTest=function(station1Data,station2Data,station1Nutrient,station2Nutrient){
+  
+  if(sum(grepl(paste(station1Nutrient,"Transform",sep=""),names(station1Data)))>0){
+    varName=paste("residGAM",station1Nutrient,"Transform",sep="")
+  }else{
+    varName=paste("residGAM",station1Nutrient,sep="")
+  }
+  
+  if(sum(grepl(paste(station2Nutrient,"Transform",sep=""),names(station2Data)))>0){
+    varName2=paste("residGAM",station2Nutrient,"Transform",sep="")
+  }else{
+    varName2=paste("residGAM",station2Nutrient,sep="")
+  }
+  
+  empP<-c()
+  for(i in 2:nrow(station2Data) ){
+    test1=station2Data[c((i):nrow(station2Data),1:(i-1)),varName2]
+    
+    test=ccf(station1Data[,varName],test1,lag.max=12,plot=F)
+    ccfOfInterest=test$acf[14:25]
+    empP<-c( empP,ccfOfInterest[which.max(abs(ccfOfInterest))] )
+  #  print(i)
+  }
+  test=ccf(station1Data[,varName],station2Data[,varName2],lag.max=12,plot=F)
+  ccfOfInterest=test$acf[14:25]
+  lagOfInterest=test$lag[14:25]
+  maxLag=lagOfInterest[which.max(abs(ccfOfInterest))]
+  if(ccfOfInterest[which.max(abs(ccfOfInterest))]<0){
+    pVal=length(which(empP<ccfOfInterest[which.max(abs(ccfOfInterest))]))/nrow(station2Data)
+    
+  }else{
+  pVal=length(which(empP>ccfOfInterest[which.max(abs(ccfOfInterest))]))/nrow(station2Data)
+  }
+  minPval=1/nrow(station2Data)
+  
+  return(list(maxLag=maxLag,pVal=pVal,minPval=minPval))
+}
+
+ccfTest(D10,D12,"chl","chl")
+```
+
+## All possible combinations: do time analysis automatically for all pairs
+
+```{r,eval=F}
+stationNames<-c("D10","D12","D22","D26","D4")
+varNames<-c("chl","do","pheo","sal","temp")
+
+allCombo=expand.grid(stationNames,stationNames,varNames,varNames)
+dim(allCombo)
+head(allCombo)
+names(allCombo)=c("station1","station2","var1","var2")
+
+withinStation=allCombo[which(allCombo$station1==allCombo$station2),]
+dim(withinStation) ## 125
+
+withinStationSameVar=withinStation[which(withinStation$var1==withinStation$var2),]
+dim(withinStationSameVar) ## 25
+
+withinStationDiffVar=withinStation[which(withinStation$var1!=withinStation$var2),]
+dim(withinStationDiffVar) ## 100
+
+leftOver=allCombo[-which(allCombo$station1==allCombo$station2),]
+acrossStationSameVar=leftOver[which(leftOver$var1==leftOver$var2),]
+dim(acrossStationSameVar) ## 100
+
+leftOver2=leftOver[-which(leftOver$var1==leftOver$var2),]
+dim(leftOver2)
+
+acrossStationDiffVar=leftOver2[which(leftOver2$var1!=leftOver2$var2),]
+dim(acrossStationDiffVar) ## 400 same as leftOver2 as expected 
+
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+D10<-read.csv("D10data.csv",stringsAsFactors=F)
+D12<-read.csv("D12data.csv",stringsAsFactors=F)
+D22<-read.csv("D22data.csv",stringsAsFactors=F)
+D26<-read.csv("D26data.csv",stringsAsFactors=F)
+D4<-read.csv("D4data.csv",stringsAsFactors=F)
+
+storeData=vector("list",length(stationNames))
+storeData[[1]]=D10
+storeData[[2]]=D12
+storeData[[3]]=D22
+storeData[[4]]=D26
+storeData[[5]]=D4
+names(storeData)=stationNames
+
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+acrossStationSameVarResults<-c()
+for(i in 1:nrow(acrossStationSameVar)){
+  
+ res= ccfTest(storeData[[acrossStationSameVar$station1[i]]],storeData[[acrossStationSameVar$station2[i]]],
+          as.character(acrossStationSameVar$var1[i]),as.character(acrossStationSameVar$var2[i]))
+
+ 
+ acrossStationSameVarResults<-rbind(acrossStationSameVarResults,c(res$maxLag,res$pVal,res$minPval))
+print(i)
+}
+
+write.csv(acrossStationSameVarResults,"acrossStationSameVarResults.csv",row.names=F)
+
+
+acrossStationDiffVarResults<-c()
+for(i in 1:nrow(acrossStationDiffVar)){
+  res= ccfTest(storeData[[acrossStationDiffVar$station1[i]]],storeData[[acrossStationDiffVar$station2[i]]],
+               as.character(acrossStationDiffVar$var1[i]),as.character(acrossStationDiffVar$var2[i]))
+  
+  
+  acrossStationDiffVarResults<-rbind(acrossStationDiffVarResults,c(res$maxLag,res$pVal,res$minPval))
+  print(i)
+}
+
+write.csv(acrossStationDiffVarResults,"acrossStationDiffVarResults.csv",row.names=F)
+
+
+withinStationDiffVarResults<-c()
+for(i in 1:nrow(withinStationDiffVar)){
+  res=ccfTest(storeData[[withinStationDiffVar$station1[i]]],storeData[[withinStationDiffVar$station2[i]]],
+              as.character(withinStationDiffVar$var1[i]),as.character(withinStationDiffVar$var2[i]))
+  withinStationDiffVarResults<-rbind(withinStationDiffVarResults,c(res$maxLag,res$pVal,res$minPval))
+  print(i)
+}
+write.csv(withinStationDiffVarResults,"withinStationDiffVarResults.csv",row.names=F)
+
+
+## don't actually use this, not one of the research questions
+withinStationSameVarResults<-c()
+for(i in 1:nrow(withinStationSameVar)){
+  res=acfTest(storeData[[withinStationSameVar$station1[i]]],as.character(withinStationSameVar$var1[i]))
+  withinStationSameVarResults<-rbind(withinStationSameVarResults,c(res$maxLag,res$pVal,res$minPval))
+  print(i)
+}
+
+write.csv(withinStationSameVarResults,"withinStationSameVarResults.csv",row.names=F)
+
+
+```
+
+## Frequency domain
+
+```{r}
+require(psd)
+
+
+ccfTestFreq=function(station1Data,station2Data,station1Nutrient,station2Nutrient){
+
+  if(sum(grepl(paste(station1Nutrient,"Transform",sep=""),names(station1Data)))>0){
+    varName=paste("residGAM",station1Nutrient,"Transform",sep="")
+  }else{
+    varName=paste("residGAM",station1Nutrient,sep="")
+  }
+  
+  if(sum(grepl(paste(station2Nutrient,"Transform",sep=""),names(station2Data)))>0){
+    varName2=paste("residGAM",station2Nutrient,"Transform",sep="")
+  }else{
+    varName2=paste("residGAM",station2Nutrient,sep="")
+  }
+ 
+  ## doesn't change results
+  #tryThis=prewhiten(station1Data[,varName],AR.max=2)
+  #tryThis2=prewhiten(station2Data[,varName2],AR.max=2)
+  #test=spectrum(cbind(tryThis$prew_ar,tryThis2$prew_ar),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F)
+  
+  
+  test=spectrum( cbind(station1Data[,varName],station2Data[,varName2]),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
+  
+  
+  pVal=1-pf(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[which.max(test$coh)]
+
+  maxPhase=test$phase[which.max(test$coh)]
+  maxCoh=test$coh[which.max(test$coh)]
+  maxFreq=1/test$freq[which.max(test$coh)]
+  
+  
+  return(list(maxPhase=maxPhase,maxCoh=maxCoh,maxFreq=maxFreq,pVal=pVal))
+}
+
+ccfTestFreq(D10,D12,"chl","pheo")
+
+
+
+acfTestFreq=function(stationData,nutrient){
+  if(sum(grepl(paste(nutrient,"Transform",sep=""),names(stationData)))>0){
+    varName=paste("residGAM",nutrient,"Transform",sep="")
+  }else{
+    varName=paste("residGAM",nutrient,sep="")
+  }
+ 
+  test=spectrum(stationData[,varName],taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F)
+  pVal=1-pchisq(test$spec,2)
+ 
+  maxSpec=test$spec[which.max(test$spec)]
+  maxFreq=1/test$freq[which.max(test$spec)]
+  pVal=pVal[which.max(test$spec)]
+
+  return(list(maxSpec=maxSpec,maxFreq=maxFreq,pVal=pVal))
+  
+}
+
+
+acfTestFreq(D10,"chl")
+```
+
+## Automate checking all possible pairs in the frequency domain.
+
+```{r}
+stationNames<-c("D10","D12","D22","D26","D4")
+varNames<-c("chl","do","pheo","sal","temp")
+
+allCombo=expand.grid(stationNames,stationNames,varNames,varNames)
+dim(allCombo)
+head(allCombo)
+names(allCombo)=c("station1","station2","var1","var2")
+
+withinStation=allCombo[which(allCombo$station1==allCombo$station2),]
+dim(withinStation) ## 125
+withinStation[,1]=as.character(withinStation[,1])
+withinStation[,2]=as.character(withinStation[,2])
+withinStation[,3]=as.character(withinStation[,3])
+withinStation[,4]=as.character(withinStation[,4])
+
+withinStationSameVar=withinStation[which(withinStation$var1==withinStation$var2),]
+dim(withinStationSameVar) ## 25
+withinStationSameVar[,1]=as.character(withinStationSameVar[,1])
+withinStationSameVar[,2]=as.character(withinStationSameVar[,2])
+withinStationSameVar[,3]=as.character(withinStationSameVar[,3])
+withinStationSameVar[,4]=as.character(withinStationSameVar[,4])
+
+withinStationDiffVar=withinStation[which(withinStation$var1!=withinStation$var2),]
+dim(withinStationDiffVar) ## 100
+withinStationDiffVar[,1]=as.character(withinStationDiffVar[,1])
+withinStationDiffVar[,2]=as.character(withinStationDiffVar[,2])
+withinStationDiffVar[,3]=as.character(withinStationDiffVar[,3])
+withinStationDiffVar[,4]=as.character(withinStationDiffVar[,4])
+
+leftOver=allCombo[-which(allCombo$station1==allCombo$station2),]
+acrossStationSameVar=leftOver[which(leftOver$var1==leftOver$var2),]
+dim(acrossStationSameVar) ## 100
+acrossStationSameVar[,1]=as.character(acrossStationSameVar[,1])
+acrossStationSameVar[,2]=as.character(acrossStationSameVar[,2])
+acrossStationSameVar[,3]=as.character(acrossStationSameVar[,3])
+acrossStationSameVar[,4]=as.character(acrossStationSameVar[,4])
+
+leftOver2=leftOver[-which(leftOver$var1==leftOver$var2),]
+dim(leftOver2)
+
+acrossStationDiffVar=leftOver2[which(leftOver2$var1!=leftOver2$var2),]
+dim(acrossStationDiffVar) ## 400 same as leftOver2 as expected 
+acrossStationDiffVar[,1]=as.character(acrossStationDiffVar[,1])
+acrossStationDiffVar[,2]=as.character(acrossStationDiffVar[,2])
+acrossStationDiffVar[,3]=as.character(acrossStationDiffVar[,3])
+acrossStationDiffVar[,4]=as.character(acrossStationDiffVar[,4])
+```
+
+```{r,eval=F}
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+acrossStationSameVarResults<-c()
+for(i in 1:nrow(acrossStationSameVar)){
+  
+  res=ccfTestFreq(storeData[[acrossStationSameVar$station1[i]]],storeData[[acrossStationSameVar$station2[i]]],
+                  as.character(acrossStationSameVar$var1[i]),as.character(acrossStationSameVar$var2[i]))
+  
+  
+  acrossStationSameVarResults<-rbind(acrossStationSameVarResults,c(res$maxPhase,res$maxCoh,res$maxFreq,res$pVal))
+  print(i)
+}
+
+write.csv(acrossStationSameVarResults,"acrossStationSameVarResultsFreq.csv",row.names=F)
+
+
+acrossStationDiffVarResults<-c()
+for(i in 1:nrow(acrossStationDiffVar)){
+  res= ccfTestFreq(storeData[[acrossStationDiffVar$station1[i]]],storeData[[acrossStationDiffVar$station2[i]]],
+                   as.character(acrossStationDiffVar$var1[i]),as.character(acrossStationDiffVar$var2[i]))
+  
+  
+  acrossStationDiffVarResults<-rbind(acrossStationDiffVarResults,c(res$maxPhase,res$maxCoh,res$maxFreq,res$pVal))
+  print(i)
+}
+
+write.csv(acrossStationDiffVarResults,"acrossStationDiffVarResultsFreq.csv",row.names=F)
+
+
+withinStationDiffVarResults<-c()
+for(i in 1:nrow(withinStationDiffVar)){
+  res=ccfTestFreq(storeData[[withinStationDiffVar$station1[i]]],storeData[[withinStationDiffVar$station2[i]]],
+                  as.character(withinStationDiffVar$var1[i]),as.character(withinStationDiffVar$var2[i]))
+  withinStationDiffVarResults<-rbind(withinStationDiffVarResults,c(res$maxPhase,res$maxCoh,res$maxFreq,res$pVal))
+  print(i)
+}
+write.csv(withinStationDiffVarResults,"withinStationDiffVarResultsFreq.csv",row.names=F)
+
+
+## don't use, not part of research question
+withinStationSameVarResults<-c()
+for(i in 1:nrow(withinStationSameVar)){
+  res=acfTestFreq(storeData[[withinStationSameVar$station1[i]]],as.character(withinStationSameVar$var1[i]))
+  withinStationSameVarResults<-rbind(withinStationSameVarResults,c(res$maxSpec,res$maxFreq,res$pVal))
+  print(i)
+}
+
+write.csv(withinStationSameVarResults,"withinStationSameVarResultsFreq.csv",row.names=F)
+
+
+
+```
+
+## Finding significant pairs in time domain 
+
+```{r}
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+acrossStationSameVarResults<-read.csv("acrossStationSameVarResults.csv",stringsAsFactors=F)
+acrossStationDiffVarResults<-read.csv("acrossStationDiffVarResults.csv",stringsAsFactors=F)
+withinStationSameVarResults<-read.csv("withinStationSameVarResults.csv",stringsAsFactors=F)
+withinStationDiffVarResults<-read.csv("withinStationDiffVarResults.csv",stringsAsFactors=F)
+
+names(acrossStationSameVarResults)=names(acrossStationDiffVarResults)=names(withinStationSameVarResults)=
+names(withinStationDiffVarResults)=c("maxLag","pVal","minPval")
+
+## first check to make sure we have availability to get significant p-values
+
+summary(acrossStationSameVarResults$minPval) ## 0.005376  for all is the max min pval, so we are good
+summary(acrossStationDiffVarResults$minPval)
+summary(withinStationSameVarResults$minPval)
+summary(withinStationDiffVarResults$minPval)
+
+length(which(acrossStationSameVarResults$pVal<0.05)) ## 18
+nrow(acrossStationSameVarResults) ## 100
+length(which(acrossStationDiffVarResults$pVal<0.05)) ## 83
+nrow(acrossStationDiffVarResults) ## 400
+length(which(withinStationSameVarResults$pVal<0.05)) ## 2
+nrow(withinStationSameVarResults) ## 25
+length(which(withinStationDiffVarResults$pVal<0.05)) ## 23
+nrow(withinStationDiffVarResults) ## 100
+
+```
+
+```{r}
+sum(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
+## 3
+
+sigToPlot=acrossStationSameVar[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
+resToPlot=acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
+sigToPlot
+resToPlot
+```
+
+```{r}
+sum(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
+## 8
+
+sigToPlot=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+sigToPlot
+resToPlot
+```
+
+```{r}
+sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
+## 1
+
+sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+
+sigToPlot
+resToPlot
+```
+
+## Find significant pairs in frequency domain
+
+```{r}
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+acrossStationSameVarResults<-read.csv("acrossStationSameVarResultsFreq.csv",stringsAsFactors=F)
+acrossStationDiffVarResults<-read.csv("acrossStationDiffVarResultsFreq.csv",stringsAsFactors=F)
+#withinStationSameVarResults<-read.csv("withinStationSameVarResultsFreq.csv",stringsAsFactors=F)
+withinStationDiffVarResults<-read.csv("withinStationDiffVarResultsFreq.csv",stringsAsFactors=F)
+
+names(acrossStationSameVarResults)=names(acrossStationDiffVarResults)=names(withinStationDiffVarResults)=c("maxPhase","maxCoh","maxFreq","pVal")
+
+length(which(acrossStationSameVarResults$pVal<0.05)) ## 100 pw 100
+nrow(acrossStationSameVarResults) ## 100
+hist(acrossStationSameVarResults$pVal)
+length(which(acrossStationDiffVarResults$pVal<0.05)) ## 266 pw 262
+nrow(acrossStationDiffVarResults) ## 400
+hist(acrossStationDiffVarResults$pVal)
+length(which(withinStationDiffVarResults$pVal<0.05)) ## 64 pw 64
+nrow(withinStationDiffVarResults) ## 100
+hist(withinStationDiffVarResults$pVal)
+```
+
+```{r}
+sum(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
+## 90 pw 92
+sigToPlot=acrossStationSameVar[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
+resToPlot=acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
+sigToPlot
+resToPlot
+```
+
+```{r}
+sum(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
+sigToPlot=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+sigToPlot
+resToPlot
+```
+
+```{r}
+sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
+sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+sigToPlot
+resToPlot
+```
