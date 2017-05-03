@@ -1,0 +1,367 @@
+---
+title: "Appendix Figures"
+author: "Sara Stoudt"
+date: "May 3, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Figure 1
+
+```{r,eval=F}
+load(file="~/Desktop/DS421_summerProject/GAM_weightedReg_comparison/shiny/data/delt_map.RData")
+plot(delt_map)
+points(longitude,latitude,pch=19)
+points(sfei$Longitude,sfei$Latitude,col="red",cex=2)
+
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+D10<-read.csv("D10data.csv",stringsAsFactors=F)
+D12<-read.csv("D12data.csv",stringsAsFactors=F)
+D22<-read.csv("D22data.csv",stringsAsFactors=F)
+D26<-read.csv("D26data.csv",stringsAsFactors=F)
+D4<-read.csv("D4data.csv",stringsAsFactors=F)
+stationNames<-c("D10","D12","D22","D26","D4")
+
+D10=cbind(D10,rep("D10",nrow(D10)))
+D12=cbind(D12,rep("D12",nrow(D11)))
+D22=cbind(D22,rep("D22",nrow(D22)))
+D26=cbind(D26,rep("D26",nrow(D26)))
+D4=cbind(D4,rep("D4",nrow(D4)))
+
+D10n=D10[,c(1:13,ncol(D10))]
+D12n=D12[,c(1:13,ncol(D12))]
+D22n=D22[,c(1:13,ncol(D22))]
+D26n=D26[,c(1:13,ncol(D26))]
+D4n=D4[,c(1:13,ncol(D4))]
+
+names(D10n)[14]=names(D12n)[14]=names(D22n)[14]=names(D26n)[14]=names(D4n)[14]="station"
+
+D10[,14]=as.character(D10[,14])
+D12[,14]=as.character(D12[,14])
+D22[,14]=as.character(D22[,14])
+D26[,14]=as.character(D26[,14])
+D4[,14]=as.character(D4[,14])
+
+sfei=rbind(D10n, D12n, D22n, D26n, D4n)
+
+require(ggplot2)
+g1=ggplot(sfei, aes(x=date_dec, y=chl, colour=as.factor(Station)))+geom_line()+xlim(2000,2015)+ labs(colour = "Station")+xlab("Date")
+g2=ggplot(sfei, aes(x=date_dec, y=pheo, colour=as.factor(Station)))+geom_line()+xlim(2000,2015)+ labs(colour = "Station") +xlab("Date")
+g3=ggplot(sfei, aes(x=date_dec, y=temp, colour=as.factor(Station)))+geom_line()+xlim(2000,2015)+ labs(colour = "Station") +xlab("Date")
+g4=ggplot(sfei, aes(x=date_dec, y=sal, colour=as.factor(Station)))+geom_line()+xlim(2000,2015)+ labs(colour = "Station") +xlab("Date")
+g5=ggplot(sfei, aes(x=date_dec, y=do, colour=as.factor(Station)))+geom_line()+xlim(2000,2015)+ labs(colour = "Station") +xlab("Date")
+
+
+library(gridExtra)
+grid.arrange(g1,g2,g3,g4,g5, ncol=1, nrow =5)
+
+```
+
+Figure 2
+
+```{r,eval=F}
+par(mfrow=c(3,1))
+plot(D10$chl,type="l",main="Seasonal Component D10",xlab="Date",ylab="chl")
+lines(D10$predGAMchl,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","GAM fitted"),bty="n")
+
+
+plot(D4$pheo,type="l",main="Seasonal Component D4",xlab="Date",ylab="pheo")
+lines(D4$predGAMpheo,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","GAM fitted"),bty="n")
+
+
+plot(D22$do,type="l",main="Seasonal Component D22",xlab="Date",ylab="do")
+lines(D22$predGAMdo,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","GAM fitted"),bty="n")
+
+
+par(mfrow=c(3,1))
+
+plot(D26$residGAMpheo,type="l",xlab="Date",ylab="Resid Pheo D26",main="Variance Stabilization")
+lines(D26$residGAMpheoTransform,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","log transform"),bty="n")
+
+
+plot(D4$residGAMchl,type="l",xlab="Date",ylab="Resid Chl D4",main="Variance Stabilization")
+lines(D4$residGAMchlTransform,col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","log transform"),bty="n")
+
+
+plot(D12$residGAMsal,type="l",main="Transform Doesn't Help",xlab="Date",ylab="Resid Sal D12")
+lines(log(D12$residGAMsal+abs(min(D12$residGAMsal))),col="red")
+legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","log transform"),bty="n")
+
+
+```
+
+Figure 3
+
+```{r,eval=F}
+par(mfrow=c(3,1))
+plot(D12$residGAMdo,D12$residGAMtemp,xlab="resid do",ylab="resid temp",main="D12")
+test=ccf(D12$residGAMdo,D12$residGAMtemp,lag.max=12,plot=T,main="")
+
+station1Data=station2Data=D12
+varName="do"
+varName2="temp"
+empP<-c()
+for(i in 2:nrow(station2Data) ){
+  test1=station2Data[c((i):nrow(station2Data),1:(i-1)),varName2]
+  
+  test=ccf(station1Data[,varName],test1,lag.max=12,plot=F)
+  ccfOfInterest=test$acf[14:25]
+  empP<-c( empP,ccfOfInterest[which.max(abs(ccfOfInterest))] )
+  #  print(i)
+}
+test=ccf(station1Data[,varName],station2Data[,varName2],lag.max=12,plot=F)
+ccfOfInterest=test$acf[14:25]
+hist(empP,xlab="Max Absolute Cross Correlation",main="Empirical Distribution from Rotation Test")
+abline(v=ccfOfInterest[which.max(ccfOfInterest)],col="red")
+
+
+##
+par(mfrow=c(4,1))
+test=spectrum( cbind(D12[,"residGAMdo"],D12[,"residGAMtemp"]),taper=.2,log="no",spans=c(2,2),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency",sub=c("Window = 2"))
+f=qf(0.95,2,test$df-2) 
+C = f/(test$df/2-1+f) 
+## test$df is 2L
+abline(h=C,col="red") 
+
+test=spectrum( cbind(D12[,"residGAMdo"],D12[,"residGAMtemp"]),taper=.2,log="no",spans=c(8,8),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency",sub=c("Window = 8"))
+f=qf(0.95,2,test$df-2) 
+C = f/(test$df/2-1+f) 
+## test$df is 2L
+abline(h=C,col="red") 
+
+test=spectrum( cbind(D12[,"residGAMdo"],D12[,"residGAMtemp"]),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency",sub=c("Window = 16"))
+f=qf(0.95,2,test$df-2) 
+C = f/(test$df/2-1+f)
+## test$df is 2L
+abline(h=C,col="red") 
+
+test=spectrum( cbind(D12[,"residGAMdo"],D12[,"residGAMtemp"]),taper=.2,log="no",spans=c(20,20),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency",sub=c("Window = 20"))
+f=qf(0.95,2,test$df-2) 
+C = f/(test$df/2-1+f) 
+## test$df is 2L
+abline(h=C,col="red") 
+
+```
+
+Figure 4
+
+```{r,eval=F}
+longitude=c(-121.2647, -121.5205, -121.9183, -121.8063, -121.6148, -121.7391, -121.5669, -121.5730, -121.8205,
+            -122.3729, -122.1177,-122.0397, -121.9900, -121.4199, -121.3823)
+latitude=c(37.67934, 38.36771, 38.04631, 38.02161, 38.04376, 38.08453, 38.07664, 37.97048, 38.06248, 38.03022,
+           38.04436, 38.11714, 38.05992, 38.04226, 37.97817)
+sigToPlot=acrossStationSameVar[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
+resToPlot=acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
+
+sigToPlot$station1=as.character(sigToPlot$station1)
+sigToPlot$station2=as.character(sigToPlot$station2)
+
+ plot(longitude,latitude,main="Across Stations, Same Nutrient")
+ points(lonSub,latSub,col="red",pch=19)
+ arrows(lonSub[sigToPlot$station1],latSub[sigToPlot$station1],
+        lonSub[sigToPlot$station2],latSub[sigToPlot$station2],length=0)
+ 
+ text(-121.8,38.1,paste(sigToPlot$var1[1],resToPlot$maxLag[1],sep=" "),col="dodgerblue")
+ text(-121.65,38.1,paste(sigToPlot$var1[2],resToPlot$maxLag[2],sep=" "),col="dodgerblue")
+ text(-121.7,38.05,paste(sigToPlot$var1[3],resToPlot$maxLag[3],sep=" "),col="dodgerblue")
+ 
+ ##
+ sigToPlot=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+
+ plot(longitude,latitude,main="Across Stations, Different Nutrients",xlim=c(-122.2,-121.4),ylim=c(37.95,38.12))
+points(lonSub,latSub,col="red",pch=19)
+arrows(lonSub[sigToPlot$station1],latSub[sigToPlot$station1],
+     lonSub[sigToPlot$station2],latSub[sigToPlot$station2],length=0)
+text(jitter(lonSub,10),jitter(latSub,10),stationNameSub)
+
+##
+toPrint=cbind(sigToPlot,resToPlot$maxLag)
+row.names(toPrint)=NULL
+
+names(toPrint)=c("Station 1", "Station 2", "Nutrient 1", "Nutrient 2", "Lag Max")
+toPrint
+
+library(gridExtra)
+pdf("acrossStationsDiffNutrientTab.pdf", height=6, width=6)
+grid.table(toPrint)
+dev.off()
+```
+
+Figure 5
+
+```{r,eval=F}
+
+toPrint=acrossStationSameVar[which(!p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),]
+row.names(toPrint)=NULL
+
+names(toPrint)=c("Station 1", "Station 2", "Nutrient 1", "Nutrient 2")
+
+library(gridExtra)
+pdf("acrossStationsSameNutrientFREQTab.pdf", height=6, width=6)
+grid.table(toPrint)
+dev.off()
+##
+
+lonSub=c(D4$Longitude[1],D10$Longitude[1],D12$Longitude[1],D22$Longitude[1],D26$Longitude[1])
+latSub=c(D4$Latitude[1], D10$Latitude[1], D12$Latitude[1],D22$Latitude[1],D26$Latitude[1])
+stationNameSub=c("D4","D10","D12","D22","D26")
+names(lonSub)=names(latSub)=stationNameSub
+
+longitude=c(-121.2647, -121.5205, -121.9183, -121.8063, -121.6148, -121.7391, -121.5669, -121.5730, -121.8205,
+            -122.3729, -122.1177,-122.0397, -121.9900, -121.4199, -121.3823)
+latitude=c(37.67934, 38.36771, 38.04631, 38.02161, 38.04376, 38.08453, 38.07664, 37.97048, 38.06248, 38.03022,
+           38.04436, 38.11714, 38.05992, 38.04226, 37.97817)
+
+plot(longitude,latitude,cex=4)
+points(lonSub,latSub,col="red",cex=4)
+text(lonSub,latSub,stationNameSub)
+
+##
+par(mfrow=c(2,1))
+hist(acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),"maxPhase"],
+     main="Distribution of Phase for Significant Pairs",xlab="phase for maximum cross coherence")
+hist(acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),"maxFreq"],
+     main="Distribution of Frequency for Significant Pairs",xlab="frequency for maximum cross coherence",breaks=seq(0,200,by=1))
+abline(v=12,col="red")
+
+```
+
+Figure 6
+
+```{r,eval=F}
+
+toPrint=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+toPrint[order(toPrint[,1],toPrint[,2]),]
+
+
+toPrint$statstat=paste(toPrint$station1,toPrint$station2,sep="_")
+tt=table(toPrint$statstat)[order(table(toPrint$statstat),decreasing=T)]
+toPrint=as.data.frame(cbind(row.names(tt),unname(tt)))
+names(toPrint)=c("Station Combination","Number of Significant Pairs")
+row.names(toPrint)=NULL
+
+pdf("acrossStationsDiffNutComboSTab.pdf", height=8, width=6)
+grid.table(toPrint)
+dev.off()
+##
+toPrint=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
+
+toPrint[order(toPrint$station1),]
+
+row.names(toPrint)=NULL
+
+toPrint$nutnut=paste(toPrint$var1,toPrint$var2,sep="_")
+table(toPrint$nutnut)
+
+tt=table(toPrint$nutnut)[order(table(toPrint$nutnut),decreasing=T)]
+toPrint=as.data.frame(cbind(row.names(tt),unname(tt)))
+names(toPrint)=c("Nutrient Combination","Number of Significant Pairs")
+row.names(toPrint)=NULL
+
+library(gridExtra)
+pdf("acrossStationsDiffNutrientComboTab.pdf", height=8, width=6)
+grid.table(toPrint)
+dev.off()
+
+
+##
+par(mfrow=c(2,1))
+hist(acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),"maxPhase"],
+     main="Distribution of Phase for Significant Pairs",xlab="phase for maximum cross coherence")
+hist(acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),"maxFreq"],
+     main="Distribution of Frequency for Significant Pairs",xlab="frequency for maximum cross coherence",breaks=seq(0,200,by=1))
+abline(v=12,col="red")
+
+```
+
+More Tables Referenced in the Paper
+
+```{r,echo=F}
+stationNames<-c("D10","D12","D22","D26","D4")
+varNames<-c("chl","do","pheo","sal","temp")
+
+allCombo=expand.grid(stationNames,stationNames,varNames,varNames)
+dim(allCombo)
+head(allCombo)
+names(allCombo)=c("station1","station2","var1","var2")
+
+withinStation=allCombo[which(allCombo$station1==allCombo$station2),]
+dim(withinStation) ## 125
+withinStation[,1]=as.character(withinStation[,1])
+withinStation[,2]=as.character(withinStation[,2])
+withinStation[,3]=as.character(withinStation[,3])
+withinStation[,4]=as.character(withinStation[,4])
+
+withinStationSameVar=withinStation[which(withinStation$var1==withinStation$var2),]
+dim(withinStationSameVar) ## 25
+withinStationSameVar[,1]=as.character(withinStationSameVar[,1])
+withinStationSameVar[,2]=as.character(withinStationSameVar[,2])
+withinStationSameVar[,3]=as.character(withinStationSameVar[,3])
+withinStationSameVar[,4]=as.character(withinStationSameVar[,4])
+
+withinStationDiffVar=withinStation[which(withinStation$var1!=withinStation$var2),]
+dim(withinStationDiffVar) ## 100
+withinStationDiffVar[,1]=as.character(withinStationDiffVar[,1])
+withinStationDiffVar[,2]=as.character(withinStationDiffVar[,2])
+withinStationDiffVar[,3]=as.character(withinStationDiffVar[,3])
+withinStationDiffVar[,4]=as.character(withinStationDiffVar[,4])
+
+leftOver=allCombo[-which(allCombo$station1==allCombo$station2),]
+acrossStationSameVar=leftOver[which(leftOver$var1==leftOver$var2),]
+dim(acrossStationSameVar) ## 100
+acrossStationSameVar[,1]=as.character(acrossStationSameVar[,1])
+acrossStationSameVar[,2]=as.character(acrossStationSameVar[,2])
+acrossStationSameVar[,3]=as.character(acrossStationSameVar[,3])
+acrossStationSameVar[,4]=as.character(acrossStationSameVar[,4])
+
+leftOver2=leftOver[-which(leftOver$var1==leftOver$var2),]
+dim(leftOver2)
+
+acrossStationDiffVar=leftOver2[which(leftOver2$var1!=leftOver2$var2),]
+dim(acrossStationDiffVar) ## 400 same as leftOver2 as expected 
+acrossStationDiffVar[,1]=as.character(acrossStationDiffVar[,1])
+acrossStationDiffVar[,2]=as.character(acrossStationDiffVar[,2])
+acrossStationDiffVar[,3]=as.character(acrossStationDiffVar[,3])
+acrossStationDiffVar[,4]=as.character(acrossStationDiffVar[,4])
+
+```
+
+```{r}
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+
+withinStationDiffVarResults<-read.csv("withinStationDiffVarResultsFreq.csv",stringsAsFactors=F)
+
+names(withinStationDiffVarResults)=c("maxPhase","maxCoh","maxFreq","pVal")
+
+sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
+sigToPlot
+resToPlot
+```
+
+```{r}
+setwd("~/UC_Berkeley/Semester_4/timeSeries")
+acrossStationSameVarResults<-read.csv("acrossStationSameVarResultsFreq.csv",stringsAsFactors=F)
+
+names(acrossStationSameVarResults)=c("maxPhase","maxCoh","maxFreq","pVal")
+
+toPrint=acrossStationSameVar[which(p.adjust(acrossStationSameVarResults$pVal,method="BY")<0.05),][which(acrossStationSameVarResults[which(p.adjust(acrossStationSameVarResults$pVal, method = "BY") <0.05),"maxFreq"]<12),]
+row.names(toPrint)=NULL
+
+names(toPrint)=c("Station 1", "Station 2", "Nutrient 1", "Nutrient 2")
+
+toPrint
+```
