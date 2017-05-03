@@ -117,11 +117,15 @@ acfTestFreq=function(stationData,nutrient){
   #stationData=D10
  # varName="residGAMdo"
   test=spectrum(stationData[,varName],taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F)
-  dchisq(test$spec,2)
-  dchisq(test$spec,test$df)
+  pVal=1-pchisq(test$spec,2)
+  #pVal=1-pf(test$coh/(1-test$coh)*(test$df/2-1),2,test$df-2)[which.max(test$coh)]
+  
+  
+  #dchisq(test$spec,2)
+  #dchisq(test$spec,test$df)
  # qchisq(0.975,2) ## withoutsmoothing
 #  qchisq(0.975,test$df) ## with smoothing
-  plot(test)
+  #plot(test)
   
   ## need to ask about p-val dist
   ## pg 366 timeSeriesAppR
@@ -147,8 +151,8 @@ acfTestFreq=function(stationData,nutrient){
   # test=spectrum(stationData[,varName],taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F)
   maxSpec=test$spec[which.max(test$spec)]
   maxFreq=1/test$freq[which.max(test$spec)]
-  pVal=length(which(empP>maxSpec))/nrow(stationData)
-  
+  #pVal=length(which(empP>maxSpec))/nrow(stationData)
+  pVal=pVal[which.max(test$spec)]
   #minPval=1/nrow(stationData)
   
   return(list(maxSpec=maxSpec,maxFreq=maxFreq,pVal=pVal))

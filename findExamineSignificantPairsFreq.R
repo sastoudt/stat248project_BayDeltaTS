@@ -3,11 +3,12 @@
 setwd("~/UC_Berkeley/Semester_4/timeSeries")
 acrossStationSameVarResults<-read.csv("acrossStationSameVarResultsFreq.csv",stringsAsFactors=F)
 acrossStationDiffVarResults<-read.csv("acrossStationDiffVarResultsFreq.csv",stringsAsFactors=F)
-#withinStationSameVarResults<-read.csv("withinStationSameVarResultsFreq.csv",stringsAsFactors=F)
+withinStationSameVarResults<-read.csv("withinStationSameVarResultsFreq.csv",stringsAsFactors=F)
 withinStationDiffVarResults<-read.csv("withinStationDiffVarResultsFreq.csv",stringsAsFactors=F)
 
 names(acrossStationSameVarResults)=names(acrossStationDiffVarResults)=names(withinStationDiffVarResults)=c("maxPhase","maxCoh","maxFreq","pVal")
 #names(withinStationSameVarResults)=c("maxSpec","maxFreq","pVal","minPval")
+names(withinStationSameVarResults)=c("maxSpec","maxFreq","pVal")
 
 ## first check to make sure we have availability to get significant p-values
 
@@ -22,8 +23,9 @@ hist(acrossStationSameVarResults$pVal)
 length(which(acrossStationDiffVarResults$pVal<0.05)) ## 266 pw 262
 nrow(acrossStationDiffVarResults) ## 400
 hist(acrossStationDiffVarResults$pVal)
-#length(which(withinStationSameVarResults$pVal<0.05)) ## 1
-#nrow(withinStationSameVarResults) ## 25
+length(which(withinStationSameVarResults$pVal<0.05)) ## 1
+nrow(withinStationSameVarResults) ## 25
+hist(withinStationSameVarResults$pVal)
 length(which(withinStationDiffVarResults$pVal<0.05)) ## 64 pw 64
 nrow(withinStationDiffVarResults) ## 100
 hist(withinStationDiffVarResults$pVal)
@@ -134,7 +136,7 @@ sigToPlot
 resToPlot
 
 
-#sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
+sum(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05)## corrected p-val
 ## 0
 #sigToPlot=withinStationSameVar[which(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05),]
 #resToPlot=withinStationSameVarResults[which(p.adjust(withinStationSameVarResults$pVal, method = "BY") <0.05),]
@@ -146,10 +148,41 @@ resToPlot
 sum(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05)## corrected p-val
 ## 26 pw 24
 
+## FIGURE
+par(mfrow=c(4,1))
+test=spectrum( cbind(D12[,"residGAMdo"],D12[,"residGAMtemp"]),taper=.2,log="no",spans=c(2,2),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency",sub=c("Window = 2"))
+f=qf(0.95,2,test$df-2) ## make the significance level bonferroni style
+C = f/(test$df/2-1+f) ## what about a double pass filter?
+## test$df is 2L
+abline(h=C,col="red") 
+
+test=spectrum( cbind(D12[,"residGAMdo"],D12[,"residGAMtemp"]),taper=.2,log="no",spans=c(8,8),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency",sub=c("Window = 8"))
+f=qf(0.95,2,test$df-2) ## make the significance level bonferroni style
+C = f/(test$df/2-1+f) ## what about a double pass filter?
+## test$df is 2L
+abline(h=C,col="red") 
+
+test=spectrum( cbind(D12[,"residGAMdo"],D12[,"residGAMtemp"]),taper=.2,log="no",spans=c(16,16),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency",sub=c("Window = 16"))
+f=qf(0.95,2,test$df-2) ## make the significance level bonferroni style
+C = f/(test$df/2-1+f) ## what about a double pass filter?
+## test$df is 2L
+abline(h=C,col="red") 
+
+test=spectrum( cbind(D12[,"residGAMdo"],D12[,"residGAMtemp"]),taper=.2,log="no",spans=c(20,20),demean=T,detrend=F,plot=F) 
+plot(test,plot.type = "coherency",sub=c("Window = 20"))
+f=qf(0.95,2,test$df-2) ## make the significance level bonferroni style
+C = f/(test$df/2-1+f) ## what about a double pass filter?
+## test$df is 2L
+abline(h=C,col="red") 
+
 sigToPlot=withinStationDiffVar[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
 resToPlot=withinStationDiffVarResults[which(p.adjust(withinStationDiffVarResults$pVal, method = "BY") <0.05),]
 sigToPlot
 resToPlot
+### make table for appendix ###
 
 
 ###

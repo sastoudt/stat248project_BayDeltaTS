@@ -138,6 +138,14 @@ sum(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05)## corrected
 sigToPlot=acrossStationDiffVar[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
 resToPlot=acrossStationDiffVarResults[which(p.adjust(acrossStationDiffVarResults$pVal, method = "BY") <0.05),]
 
+#440       D4      D22 pheo  sal
+#449      D26       D4 pheo  sal
+
+test=ccf(D4[,"residGAMpheoTransform"],D22[,"residGAMsal"],lag.max=12,plot=T)
+test=ccf(D26[,"residGAMpheoTransform"],D4[,"residGAMsal"],lag.max=12,plot=T)
+## check for sign
+
+
 sigToPlot
 
 sigToPlot$station1=as.character(sigToPlot$station1)
