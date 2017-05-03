@@ -78,3 +78,6 @@ legend("topleft",lty=1,lwd=2,col=c("black","red"),c("orig","log transform"),bty=
 
 ## see findExamineSignificantPairs for more code
 ## search for FIGURE
+
+## see findExamineSignificantPairsFreq for more code
+## search for FIGURE
